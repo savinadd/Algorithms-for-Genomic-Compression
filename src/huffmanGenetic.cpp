@@ -1,126 +1,102 @@
-#include "huffmanGenetic.h"
-#include <iostream>
-#include <queue>
-#include <vector>
+#include "../include/HuffmanGenome.h"
 
-// Mapping functions
-int charToIndex(char ch) {
-    switch (ch) {
-    case 'A': return 0;
-    case 'C': return 1;
-    case 'G': return 2;
-    case 'T': return 3;
-    default: return -1; // Error handling
-    }
+HuffmanGenome::HuffmanGenome() : root(nullptr) {
+    frequencyMap = {{'A', 0}, {'C', 0}, {'T', 0}, {'G', 0}};
 }
 
-char indexToChar(int index) {
-    switch (index) {
-    case 0: return 'A';
-    case 1: return 'C';
-    case 2: return 'G';
-    case 3: return 'T';
-    default: return '\0'; // Error handling
-    }
+HuffmanGenome::~HuffmanGenome() {
+    deleteTree(root);
 }
 
-// Destructor for HuffmanNode
-HuffmanNode::~HuffmanNode() {
-    delete left;
-    delete right;
+void HuffmanGenome::deleteTree(HuffmanNode* node) {
+    if (!node) return;
+    deleteTree(node->left);
+    deleteTree(node->right);
+    delete node;
 }
 
-// Constructor for HuffmanNode
-HuffmanNode::HuffmanNode(char data, int frequency) {
-    left = right = nullptr;
-    this->data = data;
-    this->frequency = frequency;
-}
-
-// Comparison object for priority queue (min-heap)
-struct compare {
-    bool operator()(HuffmanNode* l, HuffmanNode* r) {
-        return l->frequency > r->frequency;
-    }
-};
-
-// Recursively generate Huffman codes
-void generateHuffmanCodes(HuffmanNode* root, std::string str, std::string huffmanCode[4]) {
-    if (!root) return;
-
-    if (!root->left && !root->right) {
-        int index = charToIndex(root->data);
-        if (index != -1) {
-            huffmanCode[index] = str;
+void HuffmanGenome::encode(const std::string& sequence) {
+    for (char ch : sequence) {
+        if (frequencyMap.find(ch) != frequencyMap.end()) {
+            frequencyMap[ch]++;
         }
     }
 
-    generateHuffmanCodes(root->left, str + "0", huffmanCode);
-    generateHuffmanCodes(root->right, str + "1", huffmanCode);
+    buildTree();
+
+    encodedSequence.clear();
+    for (char ch : sequence) {
+        encodedSequence += huffmanCodes[ch];
+    }
 }
 
-// Build the Huffman Tree and generate codes
-void buildHuffmanTree(const std::string& data, std::string huffmanCode[4]) {
-    int freq[4] = { 0 };
-    for (char ch : data) {
-        int index = charToIndex(ch);
-        if (index != -1) {
-            freq[index]++;
+void HuffmanGenome::buildTree() {
+    std::priority_queue<HuffmanNode*, std::vector<HuffmanNode*>, Compare> pq;
+
+    for (const auto& pair : frequencyMap) {
+        if (pair.second > 0) {
+            pq.push(new HuffmanNode(pair.first, pair.second));
         }
     }
 
-    std::priority_queue<HuffmanNode*, std::vector<HuffmanNode*>, compare> minHeap;
-    for (int i = 0; i < 4; ++i) {
-        if (freq[i] > 0) {
-            minHeap.push(new HuffmanNode(indexToChar(i), freq[i]));
-        }
+    while (pq.size() > 1) {
+        HuffmanNode* left = pq.top(); pq.pop();
+        HuffmanNode* right = pq.top(); pq.pop();
+
+        int sum = left->frequency + right->frequency;
+        HuffmanNode* newNode = new HuffmanNode('\0', sum);
+        newNode->left = left;
+        newNode->right = right;
+        pq.push(newNode);
     }
 
-    // Edge case: If there's only one type of character
-    if (minHeap.size() == 1) {
-        HuffmanNode* node = minHeap.top(); minHeap.pop();
-        HuffmanNode* root = new HuffmanNode('\0', node->frequency);
-        root->left = node;
-        generateHuffmanCodes(root, "", huffmanCode);
-        delete root;
-        return;
-    }
-
-    while (minHeap.size() > 1) {
-        HuffmanNode* left = minHeap.top(); minHeap.pop();
-        HuffmanNode* right = minHeap.top(); minHeap.pop();
-        HuffmanNode* node = new HuffmanNode('\0', left->frequency + right->frequency);
-        node->left = left;
-        node->right = right;
-        minHeap.push(node);
-    }
-
-    HuffmanNode* root = minHeap.top();
-
-    generateHuffmanCodes(root, "", huffmanCode);
-
-    // Clean up the Huffman tree
-    delete root;
+    root = pq.top();
+    generateCodes(root, "");
 }
 
-// Compress the input data using the Huffman codes
-std::string compressUsingHuffman(const std::string& data, const std::string huffmanCode[4]) {
-    std::string compressedData = "";
-    for (char ch : data) {
-        int index = charToIndex(ch);
-        if (index != -1) {
-            compressedData += huffmanCode[index];
-        }
+void HuffmanGenome::generateCodes(HuffmanNode* node, const std::string& code) {
+    if (!node) return;
+
+    if (!node->left && !node->right) {
+        huffmanCodes[node->character] = code;
+        reverseCodes[code] = node->character;
     }
-    return compressedData;
+
+    generateCodes(node->left, code + "0");
+    generateCodes(node->right, code + "1");
 }
 
-// Print the Huffman codes
-void printHuffmanCodes(const std::string huffmanCode[4]) {
-    std::cout << "Huffman Codes:\n";
-    for (int i = 0; i < 4; ++i) {
-        if (!huffmanCode[i].empty()) {
-            std::cout << indexToChar(i) << " : " << huffmanCode[i] << "\n";
+std::string HuffmanGenome::decode(const std::string& encodedSequence) const {
+    std::string decodedSequence = "";
+    std::string currentCode = "";
+
+    for (char bit : encodedSequence) {
+        currentCode += bit;
+        if (reverseCodes.find(currentCode) != reverseCodes.end()) {
+            decodedSequence += reverseCodes.at(currentCode);
+            currentCode = "";
         }
     }
+
+    return decodedSequence;
+}
+
+std::string HuffmanGenome::getEncodedSequence() const {
+    return encodedSequence;
+}
+
+void HuffmanGenome::printCodes() const {
+    for (const auto& pair : huffmanCodes) {
+        std::cout << pair.first << ": " << pair.second << std::endl;
+    }
+}
+
+// Calculate and return the compression ratio
+double HuffmanGenome::getCompressionRatio() const {
+    int originalSize = (frequencyMap.at('A') + frequencyMap.at('C') + frequencyMap.at('T') + frequencyMap.at('G')) * 8;
+
+    int compressedSize = encodedSequence.size(); // Size in bits
+
+    if (compressedSize == 0) return 0.0; // Avoid division by zero
+    return static_cast<double>(originalSize) / compressedSize;
 }
