@@ -3,10 +3,10 @@
 
 #include <iostream>
 #include <unordered_map>
-#include <vector>
 #include <string>
 #include <queue>
 
+// Huffman tree node structure
 struct HuffmanNode {
     char character;
     int frequency;
@@ -16,6 +16,7 @@ struct HuffmanNode {
     HuffmanNode(char ch, int freq) : character(ch), frequency(freq), left(nullptr), right(nullptr) {}
 };
 
+// Comparator for the priority queue
 struct Compare {
     bool operator()(HuffmanNode* left, HuffmanNode* right) {
         return left->frequency > right->frequency;
@@ -27,16 +28,26 @@ public:
     HuffmanGenome();
     ~HuffmanGenome();
 
+    // Encode the input sequence
     void encode(const std::string& sequence);
-    std::string decode(const std::string& encodedSequence) const;
-    std::string getEncodedSequence() const;
-    void printCodes() const;
-    void saveFrequencyMap(const std::string& filename) const;
-    void loadFrequencyMap(const std::string& filename);
 
+    // Decode the encoded sequence
+    std::string decode(const std::string& encodedSequence) const;
+
+    // Get the encoded sequence
+    std::string getEncodedSequence() const;
+
+    // Print the Huffman codes
+    void printCodes() const;
 
     // Calculate and return the compression ratio
     double getCompressionRatio() const;
+
+    // Save the frequency map to a file
+    void saveFrequencyMap(const std::string& filename) const;
+
+    // Load the frequency map from a file
+    void loadFrequencyMap(const std::string& filename);
 
 private:
     void buildTree();
@@ -54,3 +65,4 @@ private:
 };
 
 #endif // HUFFMANGENOME_H
+
