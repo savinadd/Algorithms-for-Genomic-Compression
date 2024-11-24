@@ -10,19 +10,19 @@
 #include "CompressionMetrics.h"
 #include "Compressor.h"
 
-// Huffman tree node structure
-struct HuffmanNode {
+// Huffman tree node structure for genomic data
+struct HuffmanGenomeNode {
     char character;
     int frequency;
-    HuffmanNode* left;
-    HuffmanNode* right;
+    HuffmanGenomeNode* left;
+    HuffmanGenomeNode* right;
 
-    HuffmanNode(char ch, int freq) : character(ch), frequency(freq), left(nullptr), right(nullptr) {}
+    HuffmanGenomeNode(char ch, int freq) : character(ch), frequency(freq), left(nullptr), right(nullptr) {}
 };
 
-// Comparator for the priority queue
-struct Compare {
-    bool operator()(HuffmanNode* left, HuffmanNode* right) {
+// Comparator for the priority queue specific to genomic data
+struct GenomeCompare {
+    bool operator()(HuffmanGenomeNode* left, HuffmanGenomeNode* right) {
         return left->frequency > right->frequency;
     }
 };
@@ -64,10 +64,10 @@ public:
 
 private:
     void buildTree();
-    void generateCodes(HuffmanNode* node, const std::string& code);
-    void deleteTree(HuffmanNode* node);
+    void generateCodes(HuffmanGenomeNode* node, const std::string& code);
+    void deleteTree(HuffmanGenomeNode* node);
 
-    HuffmanNode* root;
+    HuffmanGenomeNode* root;
     std::string huffmanCodes[256]; // Using ASCII codes as index
     std::string encodedSequence;
     int frequencyMap[256]; // Using ASCII codes as index

@@ -1,5 +1,3 @@
-// CompressionMetrics.cpp
-
 #include "CompressionMetrics.h"
 #include <iostream>
 #include <fstream>
@@ -7,15 +5,26 @@
 
 CompressionMetrics::CompressionMetrics() : originalSize(0), compressedSize(0) {}
 
-void CompressionMetrics::calculateOriginalSize(const int frequencyMap[256]) {
+void CompressionMetrics::calculateOriginalSize(const std::unordered_map<unsigned char, int>& frequencyMap) {
     originalSize = 0;
-    for (char ch : {'A', 'C', 'G', 'T'}) {
-        originalSize += frequencyMap[(unsigned char)ch] * 2; // 2 bits per nucleotide
+    for (const auto& entry : frequencyMap) {
+        // Assuming each character is 8 bits (for arbitrary bytes)
+        originalSize += entry.second * 8;
     }
 }
 
-void CompressionMetrics::calculateCompressedSize(const std::string& encodedSequence) {
-    compressedSize = encodedSequence.length(); // Size in bits
+void CompressionMetrics::calculateOriginalSize(const int frequencyMap[256]) {
+    originalSize = 0;
+    for (int i = 0; i < 256; ++i) {
+        if (frequencyMap[i] > 0) {
+            // Assuming each nucleotide character is 2 bits
+            originalSize += frequencyMap[i] * 2;
+        }
+    }
+}
+
+void CompressionMetrics::calculateOriginalSize(long long bits) {
+    originalSize = bits;
 }
 
 void CompressionMetrics::calculateCompressedSizeFromFile(const std::string& filename, int paddingBits) {
@@ -35,6 +44,14 @@ void CompressionMetrics::addOriginalSize(long long bits) {
 
 void CompressionMetrics::addCompressedSize(long long bits) {
     compressedSize += bits;
+}
+
+long long CompressionMetrics::getOriginalSize() const {
+    return originalSize;
+}
+
+long long CompressionMetrics::getCompressedSize() const {
+    return compressedSize;
 }
 
 double CompressionMetrics::getCompressionRatio() const {

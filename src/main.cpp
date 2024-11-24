@@ -1,59 +1,84 @@
 // main.cpp
 
 #include <iostream>
-#include "HuffmanGenome.h"
 #include "RLEGenome.h"
+#include "HuffmanGenome.h"
+#include "combinedCompressor.h"
 #include "Logger.h"
 
 int main(int argc, char* argv[]) {
     try {
-        // For simplicity, define file paths directly
+        // File paths
         std::string inputFile = "genome_data.txt";
-        std::string huffmanEncodedFile = "genome_data_huffman_encoded.bin";
-        std::string huffmanDecodedFile = "genome_data_huffman_decoded.txt";
+
+        // **RLE Compression and Decompression**
+        Logger::getInstance().log("\nStarting RLE Compression...");
+
         std::string rleEncodedFile = "genome_data_rle_encoded.bin";
         std::string rleDecodedFile = "genome_data_rle_decoded.txt";
-        std::string frequencyMapFile = "frequency_map.txt";
 
-        Logger::getInstance().log("Starting compression...");
-
-        // Huffman Encoding and Decoding
-        HuffmanGenome huffman;
-        huffman.encodeFromFile(inputFile, huffmanEncodedFile);
-        huffman.saveFrequencyMap(frequencyMapFile);
-
-        HuffmanGenome huffmanDecoder;
-        huffmanDecoder.loadFrequencyMap(frequencyMapFile);
-        huffmanDecoder.decodeFromFile(huffmanEncodedFile, huffmanDecodedFile);
+        RLEGenome rleCompressor;
+        rleCompressor.encodeFromFile(inputFile, rleEncodedFile);
+        rleCompressor.decodeFromFile(rleEncodedFile, rleDecodedFile);
 
         // Validate decoded data
-        if (huffman.validateDecodedFile(inputFile, huffmanDecodedFile)) {
-            Logger::getInstance().log("Huffman decoded data is valid.");
-        } else {
-            Logger::getInstance().log("Huffman decoded data is invalid.");
-        }
-
-        // Get and print Huffman compression metrics
-        CompressionMetrics huffmanMetrics = huffman.getMetrics();
-        huffmanMetrics.printMetrics();
-
-        // RLE Encoding and Decoding
-        RLEGenome rle;
-        rle.encodeFromFile(inputFile, rleEncodedFile);
-        rle.decodeFromFile(rleEncodedFile, rleDecodedFile);
-
-        // Validate decoded data
-        if (rle.validateDecodedFile(inputFile, rleDecodedFile)) {
+        if (rleCompressor.validateDecodedFile(inputFile, rleDecodedFile)) {
             Logger::getInstance().log("RLE decoded data is valid.");
         } else {
             Logger::getInstance().log("RLE decoded data is invalid.");
         }
 
         // Get and print RLE compression metrics
-        CompressionMetrics rleMetrics = rle.getMetrics();
+        CompressionMetrics rleMetrics = rleCompressor.getMetrics();
         rleMetrics.printMetrics();
 
-        Logger::getInstance().log("Compression completed successfully.");
+        Logger::getInstance().log("RLE Compression completed successfully.");
+
+        // **Huffman Compression and Decompression**
+        Logger::getInstance().log("\nStarting Huffman Compression...");
+
+        std::string huffmanEncodedFile = "genome_data_huffman_encoded.bin";
+        std::string huffmanDecodedFile = "genome_data_huffman_decoded.txt";
+
+        HuffmanGenome huffmanCompressor;
+        huffmanCompressor.encodeFromFile(inputFile, huffmanEncodedFile);
+        huffmanCompressor.decodeFromFile(huffmanEncodedFile, huffmanDecodedFile);
+
+        // Validate decoded data
+        if (huffmanCompressor.validateDecodedFile(inputFile, huffmanDecodedFile)) {
+            Logger::getInstance().log("Huffman decoded data is valid.");
+        } else {
+            Logger::getInstance().log("Huffman decoded data is invalid.");
+        }
+
+        // Get and print Huffman compression metrics
+        CompressionMetrics huffmanMetrics = huffmanCompressor.getMetrics();
+        huffmanMetrics.printMetrics();
+
+        Logger::getInstance().log("Huffman Compression completed successfully.");
+
+        // **Combined Compression and Decompression**
+        Logger::getInstance().log("\nStarting Combined Compression...");
+
+        std::string combinedEncodedFile = "genome_data_combined_encoded.bin";
+        std::string combinedDecodedFile = "genome_data_combined_decoded.txt";
+
+        CombinedCompressor combinedCompressor;
+        combinedCompressor.encodeFromFile(inputFile, combinedEncodedFile);
+        combinedCompressor.decodeFromFile(combinedEncodedFile, combinedDecodedFile);
+
+        // Validate decoded data
+        if (combinedCompressor.validateDecodedFile(inputFile, combinedDecodedFile)) {
+            Logger::getInstance().log("Combined decoded data is valid.");
+        } else {
+            Logger::getInstance().log("Combined decoded data is invalid.");
+        }
+
+        // Get and print Combined compression metrics
+        CompressionMetrics combinedMetrics = combinedCompressor.getMetrics();
+        combinedMetrics.printMetrics();
+
+        Logger::getInstance().log("Combined Compression completed successfully.");
 
     } catch (const std::exception& e) {
         Logger::getInstance().log(std::string("Exception: ") + e.what());

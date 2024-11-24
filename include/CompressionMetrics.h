@@ -4,16 +4,23 @@
 #define COMPRESSIONMETRICS_H
 
 #include <string>
+#include <unordered_map>
 
 class CompressionMetrics {
 public:
     CompressionMetrics();
 
+    // Overloaded methods to handle different frequency map types
+    void calculateOriginalSize(const std::unordered_map<unsigned char, int>& frequencyMap);
     void calculateOriginalSize(const int frequencyMap[256]);
-    void calculateCompressedSize(const std::string& encodedSequence);
+    void calculateOriginalSize(long long bits);
+
+    void calculateCompressedSize(long long bits);
     void calculateCompressedSizeFromFile(const std::string& filename, int paddingBits = 0);
     void addOriginalSize(long long bits);
     void addCompressedSize(long long bits);
+    long long getOriginalSize() const;
+    long long getCompressedSize() const;
     double getCompressionRatio() const;
     void printMetrics() const;
 
