@@ -1,10 +1,14 @@
+// HuffmanGenome.h
+
 #ifndef HUFFMANGENOME_H
 #define HUFFMANGENOME_H
 
 #include <iostream>
-#include <unordered_map>
 #include <string>
 #include <queue>
+#include <unordered_map>
+#include "CompressionMetrics.h"
+#include "Compressor.h"
 
 // Huffman tree node structure
 struct HuffmanNode {
@@ -23,16 +27,22 @@ struct Compare {
     }
 };
 
-class HuffmanGenome {
+class HuffmanGenome : public Compressor {
 public:
     HuffmanGenome();
     ~HuffmanGenome();
 
-    // Encode the input sequence
+    // Encode the input sequence from a string
     void encode(const std::string& sequence);
 
-    // Decode the encoded sequence
+    // Decode the encoded sequence from a string
     std::string decode(const std::string& encodedSequence) const;
+
+    // Encode the input sequence from a file
+    void encodeFromFile(const std::string& inputFilename, const std::string& outputFilename) override;
+
+    // Decode the encoded sequence from a file
+    void decodeFromFile(const std::string& inputFilename, const std::string& outputFilename) override;
 
     // Get the encoded sequence
     std::string getEncodedSequence() const;
@@ -40,8 +50,8 @@ public:
     // Print the Huffman codes
     void printCodes() const;
 
-    // Calculate and return the compression ratio
-    double getCompressionRatio() const;
+    // Get compression metrics
+    CompressionMetrics getMetrics() const override;
 
     // Save the frequency map to a file
     void saveFrequencyMap(const std::string& filename) const;
@@ -49,20 +59,22 @@ public:
     // Load the frequency map from a file
     void loadFrequencyMap(const std::string& filename);
 
+    // Validate the decoded file against the original file
+    bool validateDecodedFile(const std::string& originalFilename, const std::string& decodedFilename) override;
+
 private:
     void buildTree();
     void generateCodes(HuffmanNode* node, const std::string& code);
     void deleteTree(HuffmanNode* node);
 
     HuffmanNode* root;
-    std::unordered_map<char, std::string> huffmanCodes;
-    std::unordered_map<std::string, char> reverseCodes;
+    std::string huffmanCodes[256]; // Using ASCII codes as index
     std::string encodedSequence;
-    std::unordered_map<char, int> frequencyMap;
+    int frequencyMap[256]; // Using ASCII codes as index
 
-    // Maximum length of Huffman codes, used for error handling in decoding
-    size_t maxCodeLength;
+    CompressionMetrics metrics;
+
+    size_t getFileSize(const std::string& filename);
 };
 
 #endif // HUFFMANGENOME_H
-

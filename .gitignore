@@ -1,5 +1,63 @@
-.vs/
-.gitignore
+# Compiled object files
+*.o
+*.obj
+
+# Compiled dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled static libraries
+*.lib
+*.a
+
+# Executable files
+*.exe
+*.out
+*.app
+genome_compressor
+
+# Debug files
+*.dSYM/
+
+# Dependency directories
+/build/
+/bin/
+/lib/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Editor-specific files
 .vscode/
-.build/
-.googletest/
+.idea/
+*.code-workspace
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Generated files
+frequency_map.txt
+genome_data_huffman_encoded.bin
+genome_data_huffman_decoded.txt
+genome_data_rle_encoded.bin
+genome_data_rle_decoded.txt
+
+# CMake and build files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Backup files
+*~
+
+# Other unwanted files
+tags
