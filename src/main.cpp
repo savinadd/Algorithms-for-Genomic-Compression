@@ -1,4 +1,19 @@
-// main.cpp
+// // src/main.cpp
+// #include "CLIManager.h"
+// #include "Logger.h"
+
+// int main(int argc, char** argv) {
+//     // Initialize Logger
+//     Logger::getInstance().log("Application started.");
+
+//     // Initialize and run CLI Manager
+//     CLIManager cliManager(argc, argv);
+//     int exit_code = cliManager.run();
+
+//     Logger::getInstance().log("Application exited.");
+//     return exit_code;
+// }
+
 
 #include <iostream>
 #include "RLEGenome.h"

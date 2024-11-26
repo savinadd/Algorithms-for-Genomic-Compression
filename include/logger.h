@@ -17,4 +17,4 @@ private:
     std::mutex logMutex;
 };
 
-#endif // LOGGER_H
+#endif

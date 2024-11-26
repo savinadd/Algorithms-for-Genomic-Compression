@@ -1,12 +1,10 @@
-// CombinedCompressor.h
-
 #ifndef COMBINEDCOMPRESSOR_H
 #define COMBINEDCOMPRESSOR_H
 
 #include <string>
 #include "Compressor.h"
 #include "RLEGenome.h"
-#include "HuffmanCompressor.h" // Include the new HuffmanCompressor
+#include "HuffmanCompressor.h" 
 
 class CombinedCompressor : public Compressor {
 public:
@@ -19,8 +17,8 @@ public:
 
 private:
     RLEGenome rleCompressor;
-    HuffmanCompressor huffmanCompressor; // Use HuffmanCompressor instead of HuffmanGenome
+    HuffmanCompressor huffmanCompressor; 
     CompressionMetrics metrics;
 };
 
-#endif // COMBINEDCOMPRESSOR_H
+#endif

@@ -10,7 +10,6 @@ class CompressionMetrics {
 public:
     CompressionMetrics();
 
-    // Overloaded methods to handle different frequency map types
     void calculateOriginalSize(const std::unordered_map<unsigned char, int>& frequencyMap);
     void calculateOriginalSize(const int frequencyMap[256]);
     void calculateOriginalSize(long long bits);
@@ -29,4 +28,4 @@ private:
     long long compressedSize;  // in bits
 };
 
-#endif // COMPRESSIONMETRICS_H
+#endif

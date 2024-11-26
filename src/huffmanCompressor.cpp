@@ -1,5 +1,3 @@
-// HuffmanCompressor.cpp
-
 #include "HuffmanCompressor.h"
 #include "Logger.h"
 #include <fstream>
@@ -29,12 +27,11 @@ void HuffmanCompressor::encodeFromFile(const std::string& inputFilename, const s
     try {
         Logger::getInstance().log("Starting Huffman encoding...");
 
-        // Reset internal state
         deleteTree(root);
         root = nullptr;
         huffmanCodes.clear();
         frequencyMap.clear();
-        metrics = CompressionMetrics(); // Reset metrics
+        metrics = CompressionMetrics(); 
 
         // Open input file
         std::ifstream infile(inputFilename, std::ios::binary);

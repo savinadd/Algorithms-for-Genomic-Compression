@@ -10,6 +10,11 @@
 # Compiled static libraries
 *.lib
 *.a
+*.vcxproj.user
+*.vcxproj
+*.vcxproj.filters
+*.sln
+
 
 # Executable files
 *.exe
@@ -24,7 +29,9 @@ genome_compressor
 /build/
 /bin/
 /lib/
+*/build/
 
+build/
 # Logs
 *.log
 
@@ -61,3 +68,20 @@ Makefile
 
 # Other unwanted files
 tags
+
+# Ignore build artifacts
+build/
+
+# Ignore binary files
+*.exe
+*.bin
+
+# Ignore CMake generated files
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+compile_commands.json
+
+# Ignore vcpkg installed files
+vcpkg_installed/

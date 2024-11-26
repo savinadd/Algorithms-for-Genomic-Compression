@@ -1,5 +1,3 @@
-// RLEGenome.cpp
-
 #include "RLEGenome.h"
 #include <sstream>
 #include <fstream>
@@ -13,7 +11,6 @@ const size_t BUFFER_SIZE = 1024 * 1024; // 1 MB buffer size
 
 RLEGenome::RLEGenome() : metrics() {}
 
-// Encode the genomic sequence using Run-Length Encoding from a file
 void RLEGenome::encodeFromFile(const std::string& inputFilename, const std::string& outputFilename) {
     // Reset metrics
     metrics = CompressionMetrics();
@@ -79,7 +76,7 @@ void RLEGenome::encodeFromFile(const std::string& inputFilename, const std::stri
                 outfile.write(reinterpret_cast<char*>(&count), sizeof(count));
 
                 // Update metrics
-                metrics.addOriginalSize(count * 2); // Each nucleotide is 2 bits
+                metrics.addOriginalSize(count * 8); // Each nucleotide is 2 bits
                 metrics.addCompressedSize(2 + COUNT_BITS); // Character bits + count bits
 
                 // Reset for next character
@@ -105,7 +102,7 @@ void RLEGenome::encodeFromFile(const std::string& inputFilename, const std::stri
         outfile.write(reinterpret_cast<char*>(&count), sizeof(count));
 
         // Update metrics
-        metrics.addOriginalSize(count * 2); // Each nucleotide is 2 bits
+        metrics.addOriginalSize(count * 8); // Each nucleotide is 2 bits
         metrics.addCompressedSize(2 + COUNT_BITS); // Character bits + count bits
     }
 
@@ -113,7 +110,6 @@ void RLEGenome::encodeFromFile(const std::string& inputFilename, const std::stri
     outfile.close();
 }
 
-// Decode the encoded sequence back to its original form from a file
 void RLEGenome::decodeFromFile(const std::string& inputFilename, const std::string& outputFilename) {
     // Open input file
     std::ifstream infile(inputFilename, std::ios::binary);
@@ -174,8 +170,6 @@ void RLEGenome::decodeFromFile(const std::string& inputFilename, const std::stri
     infile.close();
     outfile.close();
 }
-
-// Validate the decoded file against the original
 bool RLEGenome::validateDecodedFile(const std::string& originalFilename, const std::string& decodedFilename) {
     try {
         const size_t BUFFER_SIZE = 65536; // 64 KB buffer
@@ -234,7 +228,6 @@ CompressionMetrics RLEGenome::getMetrics() const {
     return metrics;
 }
 
-// Remove or comment out these methods if they're not used
 /*
 std::string RLEGenome::encode(const std::string& sequence) {
     // If this method is not used, you can remove it or return an empty string

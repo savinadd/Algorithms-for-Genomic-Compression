@@ -1,5 +1,3 @@
-// HuffmanCompressor.h
-
 #ifndef HUFFMANCOMPRESSOR_H
 #define HUFFMANCOMPRESSOR_H
 
@@ -8,7 +6,6 @@
 #include "CompressionMetrics.h"
 #include "Compressor.h"
 
-// Huffman tree node structure
 struct HuffmanNode {
     unsigned char byte;
     int frequency;
@@ -18,7 +15,6 @@ struct HuffmanNode {
     HuffmanNode(unsigned char b, int freq) : byte(b), frequency(freq), left(nullptr), right(nullptr) {}
 };
 
-// Comparator for the priority queue
 struct Compare {
     bool operator()(HuffmanNode* left, HuffmanNode* right) {
         return left->frequency > right->frequency;
@@ -30,16 +26,12 @@ public:
     HuffmanCompressor();
     ~HuffmanCompressor();
 
-    // Encode the input sequence from a file
     void encodeFromFile(const std::string& inputFilename, const std::string& outputFilename) override;
 
-    // Decode the encoded sequence from a file
     void decodeFromFile(const std::string& inputFilename, const std::string& outputFilename) override;
 
-    // Get compression metrics
     CompressionMetrics getMetrics() const override;
 
-    // Validate the decoded file against the original file
     bool validateDecodedFile(const std::string& originalFilename, const std::string& decodedFilename) override;
 
 private:
@@ -54,4 +46,4 @@ private:
     CompressionMetrics metrics;
 };
 
-#endif // HUFFMANCOMPRESSOR_H
+#endif

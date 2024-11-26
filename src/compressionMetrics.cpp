@@ -8,33 +8,48 @@ CompressionMetrics::CompressionMetrics() : originalSize(0), compressedSize(0) {}
 void CompressionMetrics::calculateOriginalSize(const std::unordered_map<unsigned char, int>& frequencyMap) {
     originalSize = 0;
     for (const auto& entry : frequencyMap) {
-        // Assuming each character is 8 bits (for arbitrary bytes)
-        originalSize += entry.second * 8;
+        if (entry.second < 0) {
+            throw std::invalid_argument("Frequency cannot be negative.");
+        }
+        originalSize += entry.second * 8; // Each character is 8 bits (ASCII encoding)
     }
 }
 
 void CompressionMetrics::calculateOriginalSize(const int frequencyMap[256]) {
     originalSize = 0;
     for (int i = 0; i < 256; ++i) {
-        if (frequencyMap[i] > 0) {
-            // Assuming each nucleotide character is 2 bits
-            originalSize += frequencyMap[i] * 2;
+        if (frequencyMap[i] < 0) {
+            throw std::invalid_argument("Frequency cannot be negative.");
         }
+        originalSize += frequencyMap[i] * 8; // Each character is 8 bits (ASCII encoding)
     }
 }
 
 void CompressionMetrics::calculateOriginalSize(long long bits) {
+    if (bits < 0) {
+        throw std::invalid_argument("Size in bits cannot be negative.");
+    }
     originalSize = bits;
 }
 
 void CompressionMetrics::calculateCompressedSizeFromFile(const std::string& filename, int paddingBits) {
     std::ifstream infile(filename, std::ios::binary | std::ios::ate);
-    if (infile) {
-        std::streamsize size = infile.tellg();
-        compressedSize = ((size - 1) * 8) - paddingBits; // Exclude padding bits byte and padding bits
-        infile.close();
-    } else {
+
+    if (!infile) {
         throw std::runtime_error("Error: Unable to open file '" + filename + "' to calculate compressed size.");
+    }
+
+    std::streamsize fileSize = infile.tellg();
+    infile.close();
+
+    if (fileSize <= 0) {
+        throw std::runtime_error("Error: File is empty or unreadable.");
+    }
+
+    compressedSize = (fileSize * 8) - paddingBits;
+
+    if (compressedSize < 0) {
+        throw std::runtime_error("Error: Calculated compressed size is negative. Check paddingBits value.");
     }
 }
 

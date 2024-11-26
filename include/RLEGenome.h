@@ -1,5 +1,3 @@
-// RLEGenome.h
-
 #ifndef RLEGENOME_H
 #define RLEGENOME_H
 
@@ -29,4 +27,4 @@ private:
     std::string decode(const std::string& encodedSequence);
 };
 
-#endif // RLEGENOME_H
+#endif

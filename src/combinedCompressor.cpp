@@ -1,5 +1,3 @@
-// CombinedCompressor.cpp
-
 #include "CombinedCompressor.h"
 #include "Logger.h"
 #include <cstdio> // For remove()

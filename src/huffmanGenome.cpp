@@ -1,10 +1,8 @@
-// HuffmanGenome.cpp
-
 #include "HuffmanGenome.h"
 #include "Logger.h"
 #include <fstream>
 #include <sstream>
-#include <cstring> // For memset
+#include <cstring> 
 #include <stdexcept>
 #include <bitset>
 #include <vector>

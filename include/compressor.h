@@ -1,5 +1,3 @@
-// Compressor.h
-
 #ifndef COMPRESSOR_H
 #define COMPRESSOR_H
 

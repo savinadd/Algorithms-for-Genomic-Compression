@@ -1,20 +1,21 @@
-cmake_minimum_required(VERSION 3.10)
-project(OptimizedAlgorithmsForGenomicCompression)
+# cmake_minimum_required(VERSION 3.14)
 
-# Add Google Test
-add_subdirectory(googletest)
+# # Project Name and Version
+# project(Optimized-Algorithms-for-Genomic-Compression VERSION 1.0 LANGUAGES CXX)
 
-# Specify source files
-set(SOURCE_FILES src/huffmanGenetic.cpp tests/test_huffmanGenetic.cpp)
+# # Set C++ Standard
+# set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Executable for running tests
-add_executable(runTests ${SOURCE_FILES})
+# # Collect all source files in src/ and its subdirectories
+# file(GLOB_RECURSE SRC_FILES "src/*.cpp")
 
-# Include directories
-target_include_directories(runTests PRIVATE include)
+# # Define the executable
+# add_executable(DNA_Compression_Executable ${SRC_FILES})
 
-# Link Google Test library
-target_link_libraries(runTests gtest gtest_main)
+# # Include directories for this target
+# target_include_directories(DNA_Compression_Executable PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
-# Enable C++11 standard
-set_property(TARGET runTests PROPERTY CXX_STANDARD 11)
+# # (Optional) Link additional libraries if needed
+# # target_link_libraries(DNA_Compression_Executable PRIVATE <libraries>)
+
