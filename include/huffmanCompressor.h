@@ -12,7 +12,8 @@ struct HuffmanNode {
     HuffmanNode* left;
     HuffmanNode* right;
 
-    HuffmanNode(unsigned char b, int freq) : byte(b), frequency(freq), left(nullptr), right(nullptr) {}
+    HuffmanNode(unsigned char b, int freq) 
+        : byte(b), frequency(freq), left(nullptr), right(nullptr) {}
 };
 
 struct Compare {
@@ -23,18 +24,18 @@ struct Compare {
 
 class HuffmanCompressor : public Compressor {
 public:
+    // Constructor and Destructor
     HuffmanCompressor();
-    ~HuffmanCompressor();
+    ~HuffmanCompressor() override;
 
+    // Overridden methods from Compressor interface
     void encodeFromFile(const std::string& inputFilename, const std::string& outputFilename) override;
-
     void decodeFromFile(const std::string& inputFilename, const std::string& outputFilename) override;
-
     CompressionMetrics getMetrics() const override;
-
     bool validateDecodedFile(const std::string& originalFilename, const std::string& decodedFilename) override;
 
 private:
+    // helpers
     void buildTree();
     void generateCodes(HuffmanNode* node, const std::string& code);
     void deleteTree(HuffmanNode* node);
@@ -46,4 +47,4 @@ private:
     CompressionMetrics metrics;
 };
 
-#endif
+#endif 

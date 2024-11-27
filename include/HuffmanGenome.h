@@ -14,7 +14,8 @@ struct HuffmanGenomeNode {
     HuffmanGenomeNode* left;
     HuffmanGenomeNode* right;
 
-    HuffmanGenomeNode(char ch, int freq) : character(ch), frequency(freq), left(nullptr), right(nullptr) {}
+    HuffmanGenomeNode(char ch, int freq) 
+        : character(ch), frequency(freq), left(nullptr), right(nullptr) {}
 };
 
 struct GenomeCompare {
@@ -25,33 +26,25 @@ struct GenomeCompare {
 
 class HuffmanGenome : public Compressor {
 public:
+    // Constructor and Destructor
     HuffmanGenome();
-    ~HuffmanGenome();
+    ~HuffmanGenome() override;
 
     void encode(const std::string& sequence);
-
     std::string decode(const std::string& encodedSequence) const;
-
+    std::string getEncodedSequence() const; 
 
     void encodeFromFile(const std::string& inputFilename, const std::string& outputFilename) override;
-
     void decodeFromFile(const std::string& inputFilename, const std::string& outputFilename) override;
-
-    std::string getEncodedSequence() const;
-
-
-    void printCodes() const;
-
     CompressionMetrics getMetrics() const override;
-
-
-    void saveFrequencyMap(const std::string& filename) const;
-
-    void loadFrequencyMap(const std::string& filename);
-
     bool validateDecodedFile(const std::string& originalFilename, const std::string& decodedFilename) override;
 
+    void printCodes() const;
+    void saveFrequencyMap(const std::string& filename) const;
+    void loadFrequencyMap(const std::string& filename);
+
 private:
+
     void buildTree();
     void generateCodes(HuffmanGenomeNode* node, const std::string& code);
     void deleteTree(HuffmanGenomeNode* node);

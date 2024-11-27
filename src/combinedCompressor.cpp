@@ -1,8 +1,9 @@
 #include "CombinedCompressor.h"
 #include "Logger.h"
-#include <cstdio> // For remove()
+#include <cstdio> 
+#include <stdexcept>
 
-CombinedCompressor::CombinedCompressor() : metrics() {}
+CombinedCompressor::CombinedCompressor() : rleCompressor(), huffmanCompressor(), metrics() {}
 
 void CombinedCompressor::encodeFromFile(const std::string& inputFilename, const std::string& outputFilename) {
     try {
@@ -57,6 +58,5 @@ CompressionMetrics CombinedCompressor::getMetrics() const {
 }
 
 bool CombinedCompressor::validateDecodedFile(const std::string& originalFilename, const std::string& decodedFilename) {
-    // Reuse the validation method from RLEGenome
     return rleCompressor.validateDecodedFile(originalFilename, decodedFilename);
 }

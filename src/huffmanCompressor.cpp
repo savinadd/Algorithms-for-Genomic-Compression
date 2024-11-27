@@ -119,7 +119,7 @@ void HuffmanCompressor::encodeFromFile(const std::string& inputFilename, const s
 
 void HuffmanCompressor::decodeFromFile(const std::string& inputFilename, const std::string& outputFilename) {
     try {
-        Logger::getInstance().log("Starting Huffman decoding...");
+        Logger::getInstance().log("Starting Huffman decoding...");  
 
         // Ensure that the Huffman tree has been built
         if (!root) {

@@ -9,6 +9,7 @@
 class CombinedCompressor : public Compressor {
 public:
     CombinedCompressor();
+    virtual ~CombinedCompressor() = default;
 
     void encodeFromFile(const std::string& inputFilename, const std::string& outputFilename) override;
     void decodeFromFile(const std::string& inputFilename, const std::string& outputFilename) override;
@@ -17,7 +18,7 @@ public:
 
 private:
     RLEGenome rleCompressor;
-    HuffmanCompressor huffmanCompressor; 
+    HuffmanCompressor huffmanCompressor;
     CompressionMetrics metrics;
 };
 

@@ -1,10 +1,8 @@
 #include "RLEGenome.h"
-#include <sstream>
 #include <fstream>
-#include <bitset>
-#include <cstring>
 #include <iostream>
 #include <vector>
+#include <cstring>
 
 const int COUNT_BITS = 16; // Using 16 bits for counts
 const size_t BUFFER_SIZE = 1024 * 1024; // 1 MB buffer size
@@ -61,8 +59,6 @@ void RLEGenome::encodeFromFile(const std::string& inputFilename, const std::stri
                     return;
                 }
             } else {
-                // Write currentChar and count to output file
-                // Encode character as 2 bits
                 unsigned char charBits = 0;
                 switch (currentChar) {
                     case 'A': charBits = 0b00; break;
@@ -71,15 +67,13 @@ void RLEGenome::encodeFromFile(const std::string& inputFilename, const std::stri
                     case 'T': charBits = 0b11; break;
                 }
 
-                // Write charBits and count to output file
                 outfile.put(charBits);
                 outfile.write(reinterpret_cast<char*>(&count), sizeof(count));
 
                 // Update metrics
-                metrics.addOriginalSize(count * 8); // Each nucleotide is 2 bits
+                metrics.addOriginalSize(count * 8); // Each nucleotide is 2 bits (represented as 8 bits here for simplicity)
                 metrics.addCompressedSize(2 + COUNT_BITS); // Character bits + count bits
 
-                // Reset for next character
                 currentChar = ch;
                 count = 1;
             }
@@ -88,7 +82,7 @@ void RLEGenome::encodeFromFile(const std::string& inputFilename, const std::stri
 
     // Write the last character and its count
     if (!firstChar) {
-        // Encode character as 2 bits
+
         unsigned char charBits = 0;
         switch (currentChar) {
             case 'A': charBits = 0b00; break;
@@ -97,12 +91,10 @@ void RLEGenome::encodeFromFile(const std::string& inputFilename, const std::stri
             case 'T': charBits = 0b11; break;
         }
 
-        // Write charBits and count to output file
         outfile.put(charBits);
         outfile.write(reinterpret_cast<char*>(&count), sizeof(count));
 
-        // Update metrics
-        metrics.addOriginalSize(count * 8); // Each nucleotide is 2 bits
+        metrics.addOriginalSize(count * 8); // Each nucleotide is 2 bits (represented as 8 bits here for simplicity)
         metrics.addCompressedSize(2 + COUNT_BITS); // Character bits + count bits
     }
 
@@ -170,6 +162,11 @@ void RLEGenome::decodeFromFile(const std::string& inputFilename, const std::stri
     infile.close();
     outfile.close();
 }
+
+CompressionMetrics RLEGenome::getMetrics() const {
+    return metrics;
+}
+
 bool RLEGenome::validateDecodedFile(const std::string& originalFilename, const std::string& decodedFilename) {
     try {
         const size_t BUFFER_SIZE = 65536; // 64 KB buffer
@@ -223,20 +220,3 @@ bool RLEGenome::validateDecodedFile(const std::string& originalFilename, const s
         return false;
     }
 }
-
-CompressionMetrics RLEGenome::getMetrics() const {
-    return metrics;
-}
-
-/*
-std::string RLEGenome::encode(const std::string& sequence) {
-    // If this method is not used, you can remove it or return an empty string
-    return "";
-}
-
-std::string RLEGenome::decode(const std::string& encodedSequence) {
-    // If this method is not used, you can remove it or return an empty string
-    return "";
-}
-*/
-

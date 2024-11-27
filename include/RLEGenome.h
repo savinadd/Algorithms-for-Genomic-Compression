@@ -8,18 +8,12 @@
 class RLEGenome : public Compressor {
 public:
     RLEGenome();
+    virtual ~RLEGenome() = default;
 
-    // Encode the genomic sequence using Run-Length Encoding from a file
     void encodeFromFile(const std::string& inputFilename, const std::string& outputFilename) override;
-
-    // Decode the encoded sequence back to its original form from a file
     void decodeFromFile(const std::string& inputFilename, const std::string& outputFilename) override;
-
-    // Validate the decoded file against the original
-    bool validateDecodedFile(const std::string& originalFilename, const std::string& decodedFilename) override;
-
-    // Get compression metrics
     CompressionMetrics getMetrics() const override;
+    bool validateDecodedFile(const std::string& originalFilename, const std::string& decodedFilename) override;
 
 private:
     CompressionMetrics metrics;

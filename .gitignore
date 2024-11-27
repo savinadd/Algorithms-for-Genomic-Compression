@@ -85,3 +85,5 @@ compile_commands.json
 
 # Ignore vcpkg installed files
 vcpkg_installed/
+
+src/genome_data.txt

@@ -1,5 +1,3 @@
-// CompressionMetrics.h
-
 #ifndef COMPRESSIONMETRICS_H
 #define COMPRESSIONMETRICS_H
 
