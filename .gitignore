@@ -76,6 +76,9 @@ build/
 *.exe
 *.bin
 
+*.txt
+!CMakeLists.txt
+
 # Ignore CMake generated files
 CMakeCache.txt
 CMakeFiles/

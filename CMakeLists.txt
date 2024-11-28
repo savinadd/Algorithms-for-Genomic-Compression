@@ -1,21 +1,44 @@
-# cmake_minimum_required(VERSION 3.14)
+# Minimum required version of CMake
+cmake_minimum_required(VERSION 3.10)
 
-# # Project Name and Version
-# project(Optimized-Algorithms-for-Genomic-Compression VERSION 1.0 LANGUAGES CXX)
+# Project name and C++ standard
+project(GenomeCompressor LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
 
-# # Set C++ Standard
-# set(CMAKE_CXX_STANDARD 17)
-# set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Include directory for header-only libraries
+include_directories(include)
 
-# # Collect all source files in src/ and its subdirectories
-# file(GLOB_RECURSE SRC_FILES "src/*.cpp")
+# Automatically find all source files in src/ directory
+file(GLOB COMPRESSOR_SOURCES src/*.cpp)
 
-# # Define the executable
-# add_executable(DNA_Compression_Executable ${SRC_FILES})
+# Exclude main.cpp from the test executable
+list(REMOVE_ITEM COMPRESSOR_SOURCES ${CMAKE_SOURCE_DIR}/src/main.cpp)
 
-# # Include directories for this target
-# target_include_directories(DNA_Compression_Executable PRIVATE ${PROJECT_SOURCE_DIR}/include)
+# Add the main application executable
+add_executable(compressor src/main.cpp ${COMPRESSOR_SOURCES})
 
-# # (Optional) Link additional libraries if needed
-# # target_link_libraries(DNA_Compression_Executable PRIVATE <libraries>)
+# Enable testing
+enable_testing()
 
+# Add GoogleTest
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/release-1.12.1.zip
+)
+
+# Prevent GoogleTest from overriding compiler/linker options
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+# Fetch and make GoogleTest available
+FetchContent_MakeAvailable(googletest)
+
+# Add test executable
+file(GLOB TEST_SOURCES tests/*.cpp)
+add_executable(tests ${TEST_SOURCES} ${COMPRESSOR_SOURCES})
+
+# Link test executable to GoogleTest
+target_link_libraries(tests gtest gtest_main)
+
+# Register tests with CTest
+add_test(NAME RunTests COMMAND tests)
