@@ -79,6 +79,8 @@ build/
 *.txt
 !CMakeLists.txt
 
+*.freq
+
 # Ignore CMake generated files
 CMakeCache.txt
 CMakeFiles/

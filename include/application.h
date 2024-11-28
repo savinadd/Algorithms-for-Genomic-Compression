@@ -19,6 +19,8 @@ private:
     std::string outputFile; 
     std::string method;  
     bool useMenu;   
+    bool compressMode;
+    bool decompressMode;
 
 
     std::unique_ptr<Compressor> compressor;

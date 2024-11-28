@@ -14,6 +14,9 @@ file(GLOB COMPRESSOR_SOURCES src/*.cpp)
 # Exclude main.cpp from the test executable
 list(REMOVE_ITEM COMPRESSOR_SOURCES ${CMAKE_SOURCE_DIR}/src/main.cpp)
 
+# Set the output directory for executables to the root directory
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 # Add the main application executable
 add_executable(compressor src/main.cpp ${COMPRESSOR_SOURCES})
 
@@ -36,6 +39,9 @@ FetchContent_MakeAvailable(googletest)
 # Add test executable
 file(GLOB TEST_SOURCES tests/*.cpp)
 add_executable(tests ${TEST_SOURCES} ${COMPRESSOR_SOURCES})
+
+# Set the output directory for the tests binary to the build folder
+set_target_properties(tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # Link test executable to GoogleTest
 target_link_libraries(tests gtest gtest_main)

@@ -7,6 +7,8 @@
 #include <vector>
 #include <cstring>
 #include <queue>
+#include <FileValidator.h>
+#include <CompressionException.h>
 
 const size_t BUFFER_SIZE = 65536; // 64 KB buffer
 
@@ -23,9 +25,28 @@ void HuffmanCompressor::deleteTree(HuffmanNode* node) {
     delete node;
 }
 
+bool HuffmanCompressor::validateInputFile(const std::string& inputFilename) const {
+    if (!FileValidator::hasTxtExtension(inputFilename)) {
+        Logger::getInstance().log("Validation Error: File '" + inputFilename + "' does not have a .txt extension.");
+        std::cerr << "Error: Unsupported file format. Only .txt files are allowed.\n";
+        return false;
+    }
+
+    if (!FileValidator::fileExists(inputFilename)) {
+        Logger::getInstance().log("Validation Error: File '" + inputFilename + "' does not exist.");
+        std::cerr << "Error: File does not exist.\n";
+        return false;
+    }
+}
+
 void HuffmanCompressor::encodeFromFile(const std::string& inputFilename, const std::string& outputFilename) {
     try {
         Logger::getInstance().log("Starting Huffman encoding...");
+
+         if (!validateInputFile(inputFilename)) {
+            Logger::getInstance().log("Encoding aborted due to input file validation failure.");
+            return;
+        }
 
         deleteTree(root);
         root = nullptr;
@@ -55,6 +76,10 @@ void HuffmanCompressor::encodeFromFile(const std::string& inputFilename, const s
 
         // Build Huffman tree
         buildTree();
+
+        //  std::string freqFilename = outputFilename + ".freq";
+        // saveFrequencyMap(freqFilename);
+        // Logger::getInstance().log("Frequency map saved to '" + freqFilename + "'.");
 
         // Open output file
         std::ofstream outfile(outputFilename, std::ios::binary);
@@ -111,9 +136,15 @@ void HuffmanCompressor::encodeFromFile(const std::string& inputFilename, const s
 
         metrics.calculateCompressedSizeFromFile(outputFilename, paddingBits);
 
-        Logger::getInstance().log("Huffman encoding completed.");
+        Logger::getInstance().log("HuffmanCompressor encoding completed.");
+        std::cout << "Compression successful. Output file: " << outputFilename << "\n";
+
+     } catch (const CompressionException& ce) {
+        Logger::getInstance().log(std::string("CompressionException during HuffmanCompressor encoding: ") + ce.what());
+        std::cerr << ce.what() << std::endl;
     } catch (const std::exception& e) {
-        Logger::getInstance().log(std::string("Exception during Huffman encoding: ") + e.what());
+        Logger::getInstance().log(std::string("Exception during HuffmanCompressor encoding: ") + e.what());
+        std::cerr << "An unexpected error occurred: " << e.what() << std::endl;
     }
 }
 

@@ -15,6 +15,7 @@ public:
     void decodeFromFile(const std::string& inputFilename, const std::string& outputFilename) override;
     CompressionMetrics getMetrics() const override;
     bool validateDecodedFile(const std::string& originalFilename, const std::string& decodedFilename) override;
+    bool validateInputFile(const std::string& inputFilename) const override;
 
 private:
     RLEGenome rleCompressor;

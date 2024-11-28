@@ -24,18 +24,18 @@ struct Compare {
 
 class HuffmanCompressor : public Compressor {
 public:
-    // Constructor and Destructor
     HuffmanCompressor();
     ~HuffmanCompressor() override;
 
-    // Overridden methods from Compressor interface
     void encodeFromFile(const std::string& inputFilename, const std::string& outputFilename) override;
     void decodeFromFile(const std::string& inputFilename, const std::string& outputFilename) override;
     CompressionMetrics getMetrics() const override;
     bool validateDecodedFile(const std::string& originalFilename, const std::string& decodedFilename) override;
+    bool validateInputFile(const std::string& inputFilename) const override;
+    
 
 private:
-    // helpers
+
     void buildTree();
     void generateCodes(HuffmanNode* node, const std::string& code);
     void deleteTree(HuffmanNode* node);

@@ -43,6 +43,8 @@ public:
     void saveFrequencyMap(const std::string& filename) const;
     void loadFrequencyMap(const std::string& filename);
 
+    bool validateInputFile(const std::string& inputFilename) const override;
+
 private:
 
     void buildTree();

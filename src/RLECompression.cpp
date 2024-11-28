@@ -3,24 +3,53 @@
 #include <iostream>
 #include <vector>
 #include <cstring>
+#include <FileValidator.h>
+#include <logger.h>
 
-const int COUNT_BITS = 16; // Using 16 bits for counts
-const size_t BUFFER_SIZE = 1024 * 1024; // 1 MB buffer size
+const int COUNT_BITS = 16; 
+const size_t BUFFER_SIZE = 1024 * 1024; 
 
 RLEGenome::RLEGenome() : metrics() {}
 
+bool RLEGenome::validateInputFile(const std::string& inputFilename) const {
+
+    if (!FileValidator::hasTxtExtension(inputFilename)) {
+        Logger::getInstance().log("Validation Error: File '" + inputFilename + "' does not have a .txt extension.");
+        std::cerr << "Error: Unsupported file format. Only .txt files are allowed.\n";
+        return false;
+    }
+
+    if (!FileValidator::fileExists(inputFilename)) {
+        Logger::getInstance().log("Validation Error: File '" + inputFilename + "' does not exist.");
+        std::cerr << "Error: File does not exist.\n";
+        return false;
+    }
+
+    if (!FileValidator::hasValidGenomeData(inputFilename)) {
+        Logger::getInstance().log("Validation Error: File '" + inputFilename + "' contains invalid characters.");
+        std::cerr << "Error: File contains invalid characters. Only A, C, G, T are allowed.\n";
+        return false;
+    }
+
+    return true;
+}
+
 void RLEGenome::encodeFromFile(const std::string& inputFilename, const std::string& outputFilename) {
-    // Reset metrics
+
     metrics = CompressionMetrics();
 
-    // Open input file
+     if (!validateInputFile(inputFilename)) {
+            Logger::getInstance().log("Encoding aborted due to input file validation failure.");
+            return;
+    }
+
     std::ifstream infile(inputFilename, std::ios::binary);
     if (!infile) {
         std::cerr << "Error: Unable to open input file '" << inputFilename << "'." << std::endl;
         return;
     }
 
-    // Open output file
+
     std::ofstream outfile(outputFilename, std::ios::binary);
     if (!outfile) {
         std::cerr << "Error: Unable to open output file '" << outputFilename << "'." << std::endl;
@@ -38,7 +67,6 @@ void RLEGenome::encodeFromFile(const std::string& inputFilename, const std::stri
         for (std::streamsize i = 0; i < bytesRead; ++i) {
             char ch = buffer[i];
 
-            // Validate input character
             if (ch != 'A' && ch != 'C' && ch != 'G' && ch != 'T') {
                 std::cerr << "Error: Invalid character '" << ch << "' in input file." << std::endl;
                 infile.close();
@@ -80,7 +108,6 @@ void RLEGenome::encodeFromFile(const std::string& inputFilename, const std::stri
         }
     }
 
-    // Write the last character and its count
     if (!firstChar) {
 
         unsigned char charBits = 0;
@@ -103,14 +130,13 @@ void RLEGenome::encodeFromFile(const std::string& inputFilename, const std::stri
 }
 
 void RLEGenome::decodeFromFile(const std::string& inputFilename, const std::string& outputFilename) {
-    // Open input file
+
     std::ifstream infile(inputFilename, std::ios::binary);
     if (!infile) {
         std::cerr << "Error: Unable to open input file '" << inputFilename << "'." << std::endl;
         return;
     }
 
-    // Open output file
     std::ofstream outfile(outputFilename, std::ios::binary);
     if (!outfile) {
         std::cerr << "Error: Unable to open output file '" << outputFilename << "'." << std::endl;
@@ -122,11 +148,11 @@ void RLEGenome::decodeFromFile(const std::string& inputFilename, const std::stri
         unsigned char charBits;
         int count;
 
-        // Read character bits
-        infile.read(reinterpret_cast<char*>(&charBits), sizeof(charBits));
-        if (infile.gcount() != sizeof(charBits)) break; // End of file
 
-        // Read count
+        infile.read(reinterpret_cast<char*>(&charBits), sizeof(charBits));
+        if (infile.gcount() != sizeof(charBits)) break; 
+
+
         infile.read(reinterpret_cast<char*>(&count), sizeof(count));
         if (infile.gcount() != sizeof(count)) {
             std::cerr << "Error: Incomplete count in input file." << std::endl;
@@ -154,7 +180,6 @@ void RLEGenome::decodeFromFile(const std::string& inputFilename, const std::stri
             return;
         }
 
-        // Write to output file
         std::string sequence(count, currentChar);
         outfile.write(sequence.c_str(), count);
     }
@@ -187,21 +212,20 @@ bool RLEGenome::validateDecodedFile(const std::string& originalFilename, const s
         std::vector<char> decodedBuffer(BUFFER_SIZE);
 
         while (true) {
-            // Read from original file
+
             originalFile.read(originalBuffer.data(), BUFFER_SIZE);
             std::streamsize originalBytesRead = originalFile.gcount();
 
-            // Read from decoded file
+
             decodedFile.read(decodedBuffer.data(), BUFFER_SIZE);
             std::streamsize decodedBytesRead = decodedFile.gcount();
 
-            // Check if bytes read are equal
             if (originalBytesRead != decodedBytesRead) {
                 std::cerr << "Error: Files have different sizes." << std::endl;
                 return false;
             }
 
-            // If no bytes were read, we've reached EOF for both files
+
             if (originalBytesRead == 0) {
                 break;
             }
