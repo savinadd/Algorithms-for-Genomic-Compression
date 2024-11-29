@@ -191,7 +191,6 @@ void HuffmanCompressor::encodeFromFile(const std::string &inputFilename, const s
         infile.close();
         outfile.close();
 
-
         std::ifstream originalFile(inputFilename, std::ios::binary | std::ios::ate);
         if (originalFile)
         {
@@ -203,6 +202,7 @@ void HuffmanCompressor::encodeFromFile(const std::string &inputFilename, const s
         metrics.calculateCompressedSizeFromFile(outputFilename, paddingBits);
 
         Logger::getInstance().log("HuffmanCompressor encoding completed.");
+        // Logger::getInstance().log("Compression succesfful ad in");
         std::cout << "Compression successful. Output file: " << outputFilename << "\n";
     }
     catch (const CompressionException &ce)
@@ -277,19 +277,17 @@ void HuffmanCompressor::decodeFromFile(const std::string &inputFilename, const s
 
         infile.seekg(0, std::ios::beg); // Reset to the beginning
 
-        // Read the encoded data into a bit string
         std::string bitString;
         char ch;
         size_t bytesRead = 0;
         while (bytesRead < encodedDataSize && infile.get(ch))
-        { // Corrected condition
+        {
             std::bitset<8> bits(static_cast<unsigned char>(ch));
             bitString += bits.to_string();
             bytesRead++;
         }
         infile.close();
 
-        // Remove padding bits from the end
         if (paddingBits > 0)
         {
             if (paddingBits > bitString.size())
@@ -322,13 +320,13 @@ void HuffmanCompressor::decodeFromFile(const std::string &inputFilename, const s
                 throw std::runtime_error("Error: Decoding failed. Invalid path in Huffman tree.");
             }
 
-            // If it's a leaf node
+            // leaf
             if (!currentNode->left && !currentNode->right)
             {
                 outfile.put(static_cast<char>(currentNode->byte));
                 decodedBytes++;
                 // Log each decoded byte
-                Logger::getInstance().log("Decoded byte: '" + std::string(1, static_cast<char>(currentNode->byte)) + "'");
+                // Logger::getInstance().log("Decoded byte: '" + std::string(1, static_cast<char>(currentNode->byte)) + "'");
                 currentNode = root;
             }
         }
@@ -337,6 +335,7 @@ void HuffmanCompressor::decodeFromFile(const std::string &inputFilename, const s
         std::cout << "Total decoded bytes: " << decodedBytes << "\n";
 
         Logger::getInstance().log("Huffman decoding completed.");
+        std::cout << "Decoding successful. Output file: " << outputFilename << "\n";
     }
     catch (const std::exception &e)
     {
@@ -403,7 +402,7 @@ void HuffmanCompressor::generateCodes(HuffmanNode *node, const std::string &code
         }
 
         // Log the character code
-        Logger::getInstance().log("Character '" + byteStr + "' has code: " + code);
+        // Logger::getInstance().log("Character '" + byteStr + "' has code: " + code);
     }
 
     // Recursively generate codes
@@ -444,12 +443,12 @@ bool HuffmanCompressor::validateDecodedFile(const std::string &originalFilename,
             // Read from original file
             originalFile.read(originalBuffer.data(), BUFFER_SIZE);
             std::streamsize originalBytesRead = originalFile.gcount();
-            std::cout << originalBytesRead << std::endl;
-            // Read from decoded file
+            // std::cout << originalBytesRead << std::endl;
+            //  Read from decoded file
             decodedFile.read(decodedBuffer.data(), BUFFER_SIZE);
             std::streamsize decodedBytesRead = decodedFile.gcount();
-            std::cout << decodedBytesRead << std::endl;
-            // Check if bytes read are equal
+            // std::cout << decodedBytesRead << std::endl;
+            //  Check if bytes read are equal
             if (originalBytesRead != decodedBytesRead)
             {
                 Logger::getInstance().log("Error: Files have different sizes.");
@@ -472,6 +471,7 @@ bool HuffmanCompressor::validateDecodedFile(const std::string &originalFilename,
 
         Logger::getInstance().log("Validation successful. Decoded file matches the original.");
         return true;
+        exit;
     }
     catch (const std::exception &e)
     {

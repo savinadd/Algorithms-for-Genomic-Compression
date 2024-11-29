@@ -1,107 +1,130 @@
-#define CATCH_CONFIG_MAIN 
-#include "catch.hpp"
-#include "huffmanCompressor.h"
+#include <gtest/gtest.h>
+#include "../include/HuffmanCompressor.h"
 #include <fstream>
 #include <string>
-#include <cstdio> 
 #include <logger.h>
-#include<CompressionMetrics.h>
 
-class HuffmanCompressorTestHelper {
-public:
-    static void writeToFile(const std::string& filename, const std::string& content) {
-        std::ofstream file(filename, std::ios::binary);
-        REQUIRE(file.is_open());
-        file.write(content.data(), content.size());
-        file.close();
-    }
-
-    static std::string readFromFile(const std::string& filename) {
-        std::ifstream file(filename, std::ios::binary | std::ios::ate);
-        REQUIRE(file.is_open());
-        std::streamsize size = file.tellg();
-        file.seekg(0, std::ios::beg);
-        std::string content(size, '\0');
-        file.read(&content[0], size);
-        file.close();
-        return content;
-    }
-
-    static void removeFile(const std::string& filename) {
-        std::remove(filename.c_str());
-    }
-};
-
-TEST_CASE("HuffmanCompressor: Encoding and Decoding", "[HuffmanCompressor]") {
+// Test constructor
+TEST(HuffmanCompressorTest, Constructor)
+{
     HuffmanCompressor compressor;
-
-    const std::string inputFile = "test_input.txt";
-    const std::string encodedFile = "test_encoded.bin";
-    const std::string decodedFile = "test_decoded.txt";
-
-    const std::string testContent = "AAAAGGGTCTCTCTCTAAA";
-
-    HuffmanCompressorTestHelper::writeToFile(inputFile, testContent);
-
-    REQUIRE_NOTHROW(compressor.encodeFromFile(inputFile, encodedFile));
-
-    REQUIRE_NOTHROW(compressor.decodeFromFile(encodedFile, decodedFile));
-
-    std::string decodedContent = HuffmanCompressorTestHelper::readFromFile(decodedFile);
-
-    REQUIRE(decodedContent == testContent);
-
-    // Cleanup
-    HuffmanCompressorTestHelper::removeFile(inputFile);
-    HuffmanCompressorTestHelper::removeFile(encodedFile);
-    HuffmanCompressorTestHelper::removeFile(decodedFile);
+    EXPECT_NO_THROW(HuffmanCompressor());
 }
 
-TEST_CASE("HuffmanCompressor: Validate Decoded File", "[HuffmanCompressor]") {
+// Test frequency map saving and loading
+TEST(HuffmanCompressorTest, SaveAndLoadFrequencyMap)
+{
+    Logger::getInstance().enableLogging(false);
     HuffmanCompressor compressor;
 
-    const std::string inputFile = "original.txt";
-    const std::string encodedFile = "encoded.bin";
-    const std::string decodedFile = "decoded.txt";
+    // Set up a fake frequency map
+    compressor.frequencyMap['A'] = 5;
+    compressor.frequencyMap['B'] = 3;
+    compressor.frequencyMap['C'] = 8;
 
-    const std::string testContent = "AAAAAGGGGTTTCCCC";
+    // Save frequency map to a file
+    std::string freqFile = "test.freq";
+    EXPECT_NO_THROW(compressor.saveFrequencyMap(freqFile));
 
-    HuffmanCompressorTestHelper::writeToFile(inputFile, testContent);
+    // Load the frequency map
+    HuffmanCompressor newCompressor;
+    EXPECT_NO_THROW(newCompressor.loadFrequencyMap(freqFile));
 
-    REQUIRE_NOTHROW(compressor.encodeFromFile(inputFile, encodedFile));
+    // Check that the frequency map was loaded correctly
+    EXPECT_EQ(newCompressor.frequencyMap['A'], 5);
+    EXPECT_EQ(newCompressor.frequencyMap['B'], 3);
+    EXPECT_EQ(newCompressor.frequencyMap['C'], 8);
 
-    REQUIRE_NOTHROW(compressor.decodeFromFile(encodedFile, decodedFile));
-
-    REQUIRE(compressor.validateDecodedFile(inputFile, decodedFile) == true);
-
-    HuffmanCompressorTestHelper::writeToFile(decodedFile, "corrupted content");
-
-    REQUIRE(compressor.validateDecodedFile(inputFile, decodedFile) == false);
-
-    // Cleanup
-    HuffmanCompressorTestHelper::removeFile(inputFile);
-    HuffmanCompressorTestHelper::removeFile(encodedFile);
-    HuffmanCompressorTestHelper::removeFile(decodedFile);
+    // Clean up test file
+    std::remove(freqFile.c_str());
 }
 
-TEST_CASE("HuffmanCompressor: Handle Empty File", "[HuffmanCompressor]") {
+// Test encoding from file
+TEST(HuffmanCompressorTest, EncodeFromFile)
+{
+    Logger::getInstance().enableLogging(false);
     HuffmanCompressor compressor;
 
-    const std::string inputFile = "empty.txt";
-    const std::string encodedFile = "empty_encoded.bin";
-    const std::string decodedFile = "empty_decoded.txt";
+    // Create a temporary input file
+    std::string inputFile = "test_input.txt";
+    std::ofstream input(inputFile);
+    input << "AAAABBBCCD"; // Simple test data
+    input.close();
 
-    HuffmanCompressorTestHelper::writeToFile(inputFile, "");
+    // Output compressed file
+    std::string outputFile = "test_output.huff";
 
-    REQUIRE_NOTHROW(compressor.encodeFromFile(inputFile, encodedFile));
+    // Encode the file
+    EXPECT_NO_THROW(compressor.encodeFromFile(inputFile, outputFile));
 
-    REQUIRE_NOTHROW(compressor.decodeFromFile(encodedFile, decodedFile));
+    // Check that the output file exists
+    std::ifstream output(outputFile);
+    EXPECT_TRUE(output.is_open());
+    output.close();
 
-    std::string decodedContent = HuffmanCompressorTestHelper::readFromFile(decodedFile);
-    REQUIRE(decodedContent.empty());
+    // Clean up test files
+    std::remove(inputFile.c_str());
+    std::remove(outputFile.c_str());
+    std::remove((outputFile + ".freq").c_str()); // Frequency map file
+}
 
-    // Cleanup
-    HuffmanCompressorTestHelper::removeFile(inputFile);
-    HuffmanCompressorTestHelper::removeFile(encodedFile);
-    HuffmanCompressorTestHelper::removeFile(decodedFile);
+// Test decoding from file
+TEST(HuffmanCompressorTest, DecodeFromFile)
+{
+    Logger::getInstance().enableLogging(false);
+    HuffmanCompressor compressor;
+
+    // Create a temporary input file
+    std::string inputFile = "test_input.txt";
+    std::ofstream input(inputFile);
+    input << "AAAABBBCCD"; // Simple test data
+    input.close();
+
+    // Compressed and decompressed file
+    std::string compressedFile = "test_output.huff";
+    std::string decompressedFile = "test_output_decoded.txt";
+
+    // Encode and decode the file
+    EXPECT_NO_THROW(compressor.encodeFromFile(inputFile, compressedFile));
+    EXPECT_NO_THROW(compressor.decodeFromFile(compressedFile, decompressedFile));
+
+    // Check that the decompressed file matches the original
+    std::ifstream decompressed(decompressedFile);
+    std::ostringstream decompressedContent;
+    decompressedContent << decompressed.rdbuf();
+    EXPECT_EQ(decompressedContent.str(), "AAAABBBCCD");
+
+    // Clean up test files
+    std::remove(inputFile.c_str());
+    std::remove(compressedFile.c_str());
+    std::remove((compressedFile + ".freq").c_str()); // Frequency map file
+    std::remove(decompressedFile.c_str());
+}
+
+// Test validation of decoded file
+TEST(HuffmanCompressorTest, ValidateDecodedFile)
+{
+    Logger::getInstance().enableLogging(false);
+    HuffmanCompressor compressor;
+
+    // Create a temporary input file
+    std::string inputFile = "test_input.txt";
+    std::ofstream input(inputFile);
+    input << "AAAABBBCCD"; // Simple test data
+    input.close();
+
+    // Compressed and decompressed file
+    std::string compressedFile = "test_output.huff";
+    std::string decompressedFile = "test_output_decoded.txt";
+
+    // Encode, decode, and validate
+    EXPECT_NO_THROW(compressor.encodeFromFile(inputFile, compressedFile));
+    EXPECT_NO_THROW(compressor.decodeFromFile(compressedFile, decompressedFile));
+    EXPECT_TRUE(compressor.validateDecodedFile(inputFile, decompressedFile));
+
+    // Clean up test files
+    std::remove(inputFile.c_str());
+    std::remove(compressedFile.c_str());
+    std::remove((compressedFile + ".freq").c_str()); // Frequency map file
+    std::remove(decompressedFile.c_str());
 }

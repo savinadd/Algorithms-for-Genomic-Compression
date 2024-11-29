@@ -40,8 +40,8 @@ FetchContent_MakeAvailable(googletest)
 file(GLOB TEST_SOURCES tests/*.cpp)
 add_executable(tests ${TEST_SOURCES} ${COMPRESSOR_SOURCES})
 
-# Set the output directory for the tests binary to the build folder
-set_target_properties(tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+# Set the output directory for the tests binary to the root folder
+set_target_properties(tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # Link test executable to GoogleTest
 target_link_libraries(tests gtest gtest_main)

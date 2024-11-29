@@ -20,7 +20,10 @@ struct HuffmanGenomeNode {
 
 struct GenomeCompare {
     bool operator()(HuffmanGenomeNode* left, HuffmanGenomeNode* right) {
-        return left->frequency > right->frequency;
+        if (left->frequency != right->frequency) {
+            return left->frequency > right->frequency; // Min-heap based on frequency
+        }
+        return left->character > right->character;
     }
 };
 
@@ -44,6 +47,8 @@ public:
     void loadFrequencyMap(const std::string& filename);
 
     bool validateInputFile(const std::string& inputFilename) const override;
+    enum GenomeBase { A = 0, C, G, T, BASE_COUNT };
+    std::array<unsigned int, BASE_COUNT> frequencyMap;
 
 private:
 
@@ -55,8 +60,6 @@ private:
     std::array<std::string, 4> huffmanCodes; 
     std::string encodedSequence;
     
-    enum GenomeBase { A = 0, C, G, T, BASE_COUNT };
-    std::array<unsigned int, BASE_COUNT> frequencyMap;
 
     CompressionMetrics metrics;
 

@@ -8,12 +8,13 @@
 
 namespace fs = std::filesystem;
 
-Application::Application(int argc, char** argv)
+Application::Application(int argc, char **argv)
     : argc_(argc), argv_(argv), argParser_(argc, argv),
       useMenu_(false), compressMode_(false), decompressMode_(false),
       validateMode_(false), inputFile_(""), outputFile_(""), method_(""),
       compressor(nullptr)
-{}
+{
+}
 
 int Application::run()
 {
@@ -28,29 +29,36 @@ int Application::run()
     outputFile_ = argParser_.getOutputFile();
     method_ = argParser_.getMethod();
 
-    if (useMenu_) {
+    if (useMenu_)
+    {
         menu_.displayMenu();
         return 0;
     }
 
-    try {
-        if (compressMode_) {
+    try
+    {
+        if (compressMode_)
+        {
             handleCompress();
         }
-        else if (decompressMode_) {
+        else if (decompressMode_)
+        {
             handleDecompress();
         }
-        else {
+        else
+        {
             std::cerr << "Error: Invalid mode.\n";
             return 1;
         }
     }
-    catch (const CompressionException& ce) {
+    catch (const CompressionException &ce)
+    {
         Logger::getInstance().log(std::string("CompressionException: ") + ce.what());
         std::cerr << ce.what() << "\n";
         return 1;
     }
-    catch (const std::exception& e) {
+    catch (const std::exception &e)
+    {
         Logger::getInstance().log(std::string("Exception: ") + e.what());
         std::cerr << "Error: " << e.what() << "\n";
         return 1;
@@ -68,7 +76,8 @@ void Application::handleCompress()
 
     compressor->getMetrics().printMetrics();
 
-    if (validateMode_) {
+    if (validateMode_)
+    {
         Logger::getInstance().log("Starting Huffman decoding...");
 
         // Define a temporary decoded file path
@@ -83,10 +92,12 @@ void Application::handleCompress()
         Logger::getInstance().log("Decoding completed. Decoded file: " + tempDecodedFile);
 
         bool isValid = compressor->validateDecodedFile(inputFile_, tempDecodedFile);
-        if (isValid) {
+        if (isValid)
+        {
             Logger::getInstance().log("Validation successful: Decoded file matches the original.");
         }
-        else {
+        else
+        {
             Logger::getInstance().log("Validation failed: Decoded file does not match the original.");
         }
 
@@ -105,7 +116,8 @@ void Application::handleCompress()
 
 void Application::handleDecompress()
 {
-    if (!FileValidator::fileExists(inputFile_)) {
+    if (!FileValidator::fileExists(inputFile_))
+    {
         std::cerr << "Error: Input file does not exist.\n";
         return;
     }
@@ -114,5 +126,5 @@ void Application::handleDecompress()
 
     compressor->decodeFromFile(inputFile_, outputFile_);
 
-    compressor->getMetrics().printMetrics();
+    // compressor->getMetrics().printMetrics();
 }

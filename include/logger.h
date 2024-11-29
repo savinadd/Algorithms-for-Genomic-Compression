@@ -1,5 +1,3 @@
-// Logger.h
-
 #ifndef LOGGER_H
 #define LOGGER_H
 
@@ -11,8 +9,12 @@ public:
     static Logger& getInstance();
 
     void log(const std::string& message);
-
+    void enableLogging(bool enable) {
+        loggingEnabled = enable;
+    }
+    bool loggingEnabled = true;
 private:
+    
     Logger() = default;
     std::mutex logMutex;
 };

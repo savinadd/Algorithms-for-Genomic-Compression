@@ -1,11 +1,14 @@
 #include "ArgumentParser.h"
 #include <iostream>
+#include <rang.hpp>
+using namespace rang;
 
-ArgumentParser::ArgumentParser(int argc, char** argv)
+ArgumentParser::ArgumentParser(int argc, char **argv)
     : argc_(argc), argv_(argv), compressMode_(false), decompressMode_(false),
       validateMode_(false), useMenu_(false), inputFile_(""), outputFile_(""), method_("") {}
 
-void ArgumentParser::parse() {
+void ArgumentParser::parse()
+{
     CLI::App app{"Genomic Data Compressor: Compresses or decompresses data using Huffman coding, Run Length Encoding, and other variations"};
 
     app.get_formatter()->column_width(70);
@@ -42,39 +45,54 @@ void ArgumentParser::parse() {
                "  View the help menu:\n"
                "    compressor --help\n");
 
-    try {
+    try
+    {
         app.parse(argc_, argv_);
     }
-    catch (const CLI::ParseError &e) {
+    catch (const CLI::ParseError &e)
+    {
         exit(app.exit(e));
     }
 
-    if (useMenu_) {
+    if (useMenu_)
+    {
         // When --menu is used, no need for other options
         return;
     }
 
-    if (compressMode_ || decompressMode_) {
-        if (inputFile_.empty()) {
-            std::cerr << "Error: --input is required when using -c or -d.\n";
-            std::cerr << "Run `compressor --help` for more information.\n";
+    if (compressMode_ || decompressMode_)
+    {
+        if (inputFile_.empty())
+        {
+            std::cerr << fg::red << "Error: --input is required when using -c or -d.\n"
+                      << style::reset;
+            std::cerr << "Run `compressor --help` for more information.\n"
+                      << style::reset;
             exit(1);
         }
 
-        if (outputFile_.empty()) {
-            std::cerr << "Error: --output is required when using -c or -d.\n";
-            std::cerr << "Run `compressor --help` for more information.\n";
+        if (outputFile_.empty())
+        {
+            std::cerr << fg::red << "Error: --output is required when using -c or -d.\n"
+                      << style::reset;
+            std::cerr << "Run `compressor --help` for more information.\n"
+                      << style::reset;
             exit(1);
         }
 
-        if (method_.empty()) {
-            std::cerr << "Error: --method is required when using -c or -d.\n";
-            std::cerr << "Run `compressor --help` for more information.\n";
+        if (method_.empty())
+        {
+            std::cerr << fg::red << "Error: --method is required when using -c or -d.\n"
+                      << style::reset;
+            std::cerr << "Run `compressor --help` for more information.\n"
+                      << style::reset;
             exit(1);
         }
     }
-    else {
-        std::cerr << "Error: Must specify either compression (-c) or decompression (-d) mode.\n";
+    else
+    {
+        std::cerr << fg::red << "Error: Must specify either compression (-c) or decompression (-d) mode.\n"
+                  << style::reset;
         std::cerr << "Run `compressor --menu` for usage instructions.\n";
         exit(1);
     }

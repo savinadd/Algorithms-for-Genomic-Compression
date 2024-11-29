@@ -17,8 +17,11 @@ struct HuffmanNode {
 };
 
 struct Compare {
-    bool operator()(HuffmanNode* left, HuffmanNode* right) {
-        return left->frequency > right->frequency;
+    bool operator()(HuffmanNode* left, HuffmanNode* right) const {
+        if (left->frequency != right->frequency) {
+            return left->frequency > right->frequency; // Min-heap based on frequency
+        }
+        return left->byte > right->byte; // Tiebreaker: lex order
     }
 };
 
@@ -32,6 +35,9 @@ public:
     CompressionMetrics getMetrics() const override;
     bool validateDecodedFile(const std::string& originalFilename, const std::string& decodedFilename) override;
     bool validateInputFile(const std::string& inputFilename) const override;
+    void saveFrequencyMap(const std::string& freqFilename);
+    void loadFrequencyMap(const std::string& freqFilename);
+    std::unordered_map<unsigned char, int> frequencyMap;  
     
 
 private:
@@ -40,12 +46,9 @@ private:
     void generateCodes(HuffmanNode* node, const std::string& code);
     void deleteTree(HuffmanNode* node);
 
-    void saveFrequencyMap(const std::string& freqFilename);
-    void loadFrequencyMap(const std::string& freqFilename);
-
     HuffmanNode* root;
     std::unordered_map<unsigned char, std::string> huffmanCodes; // Map bytes to codes
-    std::unordered_map<unsigned char, int> frequencyMap;         // Map bytes to frequencies
+   // std::unordered_map<unsigned char, int> frequencyMap;         // Map bytes to frequencies
 
     CompressionMetrics metrics;
 };

@@ -21,10 +21,21 @@ public:
     long long getCompressedSize() const;
     double getCompressionRatio() const;
     void printMetrics() const;
+    void setEntropyReduction(double originalEntropy, double compressedEntropy) {
+        if (originalEntropy > 0) {
+            entropyReduction = ((originalEntropy - compressedEntropy) / originalEntropy) * 100.0;
+        } else {
+            entropyReduction = 0.0;
+        }
+    }
+    double getCompressionEfficiency() const {
+        return (originalSize > 0) ? static_cast<double>(compressedSize) / originalSize : 0.0;
+    }
 
 private:
     long long originalSize;    // in bits
     long long compressedSize;  // in bits
+    double entropyReduction = 0.0;
     
     long getFileSizeInBytes(const std::string& filename) const;
 };

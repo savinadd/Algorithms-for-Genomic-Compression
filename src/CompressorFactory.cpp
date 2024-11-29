@@ -5,7 +5,7 @@
 #include "CombinedCompressor.h"
 #include <iostream>
 
-std::unique_ptr<Compressor> CompressorFactory::createCompressor(const std::string& method)
+std::unique_ptr<Compressor> CompressorFactory::createCompressor(const std::string &method)
 {
     if (method == "huffmangenome")
     {
