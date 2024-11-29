@@ -40,6 +40,9 @@ private:
     void generateCodes(HuffmanNode* node, const std::string& code);
     void deleteTree(HuffmanNode* node);
 
+    void saveFrequencyMap(const std::string& freqFilename);
+    void loadFrequencyMap(const std::string& freqFilename);
+
     HuffmanNode* root;
     std::unordered_map<unsigned char, std::string> huffmanCodes; // Map bytes to codes
     std::unordered_map<unsigned char, int> frequencyMap;         // Map bytes to frequencies

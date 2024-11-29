@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 #include <queue>
-#include <unordered_map>
+#include <array>
 #include "CompressionMetrics.h"
 #include "Compressor.h"
 
@@ -52,13 +52,17 @@ private:
     void deleteTree(HuffmanGenomeNode* node);
 
     HuffmanGenomeNode* root;
-    std::string huffmanCodes[256]; 
+    std::array<std::string, 4> huffmanCodes; 
     std::string encodedSequence;
-    int frequencyMap[256]; 
+    
+    enum GenomeBase { A = 0, C, G, T, BASE_COUNT };
+    std::array<unsigned int, BASE_COUNT> frequencyMap;
 
     CompressionMetrics metrics;
 
     size_t getFileSize(const std::string& filename);
+
+    int charToIndex(char ch) const;
 };
 
-#endif 
+#endif

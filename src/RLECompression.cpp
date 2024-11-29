@@ -43,6 +43,8 @@ void RLEGenome::encodeFromFile(const std::string& inputFilename, const std::stri
             return;
     }
 
+    Logger::getInstance().log("Compressing using Run Length encoding...");
+
     std::ifstream infile(inputFilename, std::ios::binary);
     if (!infile) {
         std::cerr << "Error: Unable to open input file '" << inputFilename << "'." << std::endl;
@@ -99,9 +101,9 @@ void RLEGenome::encodeFromFile(const std::string& inputFilename, const std::stri
                 outfile.write(reinterpret_cast<char*>(&count), sizeof(count));
 
                 // Update metrics
-                metrics.addOriginalSize(count * 8); // Each nucleotide is 2 bits (represented as 8 bits here for simplicity)
-                metrics.addCompressedSize(2 + COUNT_BITS); // Character bits + count bits
-
+                metrics.addOriginalSize(count * 8); 
+                metrics.addCompressedSize(2 + COUNT_BITS); /[[[/ Character bits + count bits
+]]]
                 currentChar = ch;
                 count = 1;
             }
@@ -121,12 +123,13 @@ void RLEGenome::encodeFromFile(const std::string& inputFilename, const std::stri
         outfile.put(charBits);
         outfile.write(reinterpret_cast<char*>(&count), sizeof(count));
 
-        metrics.addOriginalSize(count * 8); // Each nucleotide is 2 bits (represented as 8 bits here for simplicity)
+        metrics.addOriginalSize(count * 8); 
         metrics.addCompressedSize(2 + COUNT_BITS); // Character bits + count bits
     }
 
     infile.close();
     outfile.close();
+    std::cout << "Compression successful. Output file: " << outputFilename << "\n";
 }
 
 void RLEGenome::decodeFromFile(const std::string& inputFilename, const std::string& outputFilename) {
@@ -186,6 +189,7 @@ void RLEGenome::decodeFromFile(const std::string& inputFilename, const std::stri
 
     infile.close();
     outfile.close();
+    std::cout << "Decompression successful.\n Output file: " << outputFilename << "\n";
 }
 
 CompressionMetrics RLEGenome::getMetrics() const {

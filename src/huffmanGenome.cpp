@@ -6,13 +6,13 @@
 #include <stdexcept>
 #include <bitset>
 #include <vector>
-#include <FileValidator.h>
+#include "FileValidator.h"
 #include "CompressionException.h"
 
 const size_t BUFFER_SIZE = 65536; // 64 KB buffer
 
 HuffmanGenome::HuffmanGenome() : root(nullptr) {
-    memset(frequencyMap, 0, sizeof(frequencyMap));
+    frequencyMap.fill(0);
 }
 
 HuffmanGenome::~HuffmanGenome() {
@@ -56,23 +56,31 @@ bool HuffmanGenome::validateInputFile(const std::string& inputFilename) const {
     return true;
 }
 
+int HuffmanGenome::charToIndex(char ch) const {
+    switch (ch) {
+        case 'A': return A;
+        case 'C': return C;
+        case 'G': return G;
+        case 'T': return T;
+        default: throw std::invalid_argument("Invalid character");
+    }
+}
+
 void HuffmanGenome::encodeFromFile(const std::string& inputFilename, const std::string& outputFilename) {
     try {
         Logger::getInstance().log("Starting Huffman encoding...");
 
         if (!validateInputFile(inputFilename)) {
-            Logger::getInstance().log("Encoding aborted due to input file validation failure.   ");
+            Logger::getInstance().log("Encoding aborted due to input file validation failure.");
             return;
         }
 
-  
         deleteTree(root);
         root = nullptr;
-        memset(frequencyMap, 0, sizeof(frequencyMap));
-        for (int i = 0; i < 256; ++i) huffmanCodes[i].clear();
+        frequencyMap.fill(0);
+        huffmanCodes.fill("");
         encodedSequence.clear();
         metrics = CompressionMetrics(); // Reset metrics
-
 
         std::ifstream infile(inputFilename, std::ios::binary);
         if (!infile) {
@@ -86,7 +94,8 @@ void HuffmanGenome::encodeFromFile(const std::string& inputFilename, const std::
             for (std::streamsize i = 0; i < bytesRead; ++i) {
                 char ch = buffer[i];
                 if (ch == 'A' || ch == 'C' || ch == 'G' || ch == 'T') {
-                    frequencyMap[(unsigned char)ch]++;
+                    int index = charToIndex(ch);
+                    frequencyMap[index]++;
                 } else {
                     throw std::runtime_error("Error: Invalid character '" + std::string(1, ch) + "' in input file.");
                 }
@@ -109,14 +118,14 @@ void HuffmanGenome::encodeFromFile(const std::string& inputFilename, const std::
             throw std::runtime_error("Error: Unable to open output file '" + outputFilename + "'.");
         }
 
-
         std::string bitBuffer;
         while (infile.read(buffer, sizeof(buffer)) || infile.gcount()) {
             std::streamsize bytesRead = infile.gcount();
 
             for (std::streamsize i = 0; i < bytesRead; ++i) {
                 char ch = buffer[i];
-                bitBuffer += huffmanCodes[(unsigned char)ch];
+                int index = charToIndex(ch);
+                bitBuffer += huffmanCodes[index];
 
                 while (bitBuffer.size() >= 8) {
                     std::bitset<8> byteBits(bitBuffer.substr(0, 8));
@@ -129,22 +138,19 @@ void HuffmanGenome::encodeFromFile(const std::string& inputFilename, const std::
 
         int paddingBits = 0;
         if (!bitBuffer.empty()) {
-            paddingBits = 8 - bitBuffer.size();
+            paddingBits = 8 - static_cast<int>(bitBuffer.size());
             bitBuffer.append(paddingBits, '0'); // Pad with zeros
             std::bitset<8> byteBits(bitBuffer);
             unsigned char byte = static_cast<unsigned char>(byteBits.to_ulong());
             outfile.put(byte);
         }
 
-
         Logger::getInstance().log("Padding bits added during encoding: " + std::to_string(paddingBits));
-
 
         outfile.put(static_cast<char>(paddingBits));
 
         infile.close();
         outfile.close();
-
 
         metrics.calculateOriginalSize(frequencyMap);
         metrics.calculateCompressedSizeFromFile(outputFilename, paddingBits);
@@ -160,9 +166,8 @@ void HuffmanGenome::decodeFromFile(const std::string& inputFilename, const std::
         if (inputFilename == outputFilename) {
             throw std::runtime_error("Error: Output file must be different from input file to prevent overwriting.");
         }
-    
-        Logger::getInstance().log("Starting Huffman decoding...updated");
 
+        Logger::getInstance().log("Starting Huffman decoding...");
 
         std::string freqFilename = inputFilename + ".freq";
         if (!FileValidator::fileExists(freqFilename)) {
@@ -171,22 +176,19 @@ void HuffmanGenome::decodeFromFile(const std::string& inputFilename, const std::
         loadFrequencyMap(freqFilename);
         Logger::getInstance().log("Frequency map loaded from '" + freqFilename + "'.");
 
-         if (!root) {
+        if (!root) {
             throw std::runtime_error("Error: Huffman tree not built. Load frequency map or encode data first.");
         }
-
 
         std::ifstream infile(inputFilename, std::ios::binary | std::ios::ate);
         if (!infile) {
             throw std::runtime_error("Error: Unable to open input file '" + inputFilename + "'.");
         }
 
-
         std::streamsize fileSize = infile.tellg();
         if (fileSize < 1) {
             throw std::runtime_error("Error: Encoded file is too small.");
         }
-
 
         infile.seekg(fileSize - 1, std::ios::beg);
         char paddingBitsChar;
@@ -205,7 +207,6 @@ void HuffmanGenome::decodeFromFile(const std::string& inputFilename, const std::
         infile.read(buffer.data(), dataSize);
         infile.close();
 
-
         std::string bitString;
         for (std::streamsize i = 0; i < dataSize; ++i) {
             std::bitset<8> bits(static_cast<unsigned char>(buffer[i]));
@@ -218,12 +219,10 @@ void HuffmanGenome::decodeFromFile(const std::string& inputFilename, const std::
 
         Logger::getInstance().log("Total bits to process: " + std::to_string(bitString.size()));
 
-
         std::ofstream outfile(outputFilename, std::ios::binary);
         if (!outfile) {
             throw std::runtime_error("Error: Unable to open output file '" + outputFilename + "'.");
         }
-
 
         HuffmanGenomeNode* currentNode = root;
         for (size_t i = 0; i < bitString.size(); ++i) {
@@ -240,7 +239,7 @@ void HuffmanGenome::decodeFromFile(const std::string& inputFilename, const std::
                 throw std::runtime_error("Error: Decoding failed. Invalid path in Huffman tree.");
             }
 
-            // leaf node
+            // Leaf node
             if (!currentNode->left && !currentNode->right) {
                 outfile.put(currentNode->character);
                 currentNode = root;
@@ -256,20 +255,27 @@ void HuffmanGenome::decodeFromFile(const std::string& inputFilename, const std::
 }
 
 // void HuffmanGenome::encode(const std::string& sequence) {
-   
+//     
 // }
 
 // std::string HuffmanGenome::decode(const std::string& encodedSequence) const {
-  
 //     return "";
 // }
 
 void HuffmanGenome::buildTree() {
     std::priority_queue<HuffmanGenomeNode*, std::vector<HuffmanGenomeNode*>, GenomeCompare> pq;
 
-    for (int i = 0; i < 256; ++i) {
+    for (int i = 0; i < BASE_COUNT; ++i) {
         if (frequencyMap[i] > 0) {
-            pq.push(new HuffmanGenomeNode((char)i, frequencyMap[i]));
+            char ch;
+            switch (i) {
+                case A: ch = 'A'; break;
+                case C: ch = 'C'; break;
+                case G: ch = 'G'; break;
+                case T: ch = 'T'; break;
+                default: ch = '\0'; // Should not occur
+            }
+            pq.push(new HuffmanGenomeNode(ch, frequencyMap[i]));
         }
     }
 
@@ -303,9 +309,18 @@ void HuffmanGenome::generateCodes(HuffmanGenomeNode* node, const std::string& co
     if (!node) return;
 
     if (!node->left && !node->right) {
-        huffmanCodes[(unsigned char)node->character] = code;
+        // Map character to enum index
+        int index;
+        switch (node->character) {
+            case 'A': index = A; break;
+            case 'C': index = C; break;
+            case 'G': index = G; break;
+            case 'T': index = T; break;
+            default: throw std::invalid_argument("Invalid character in Huffman tree.");
+        }
+        huffmanCodes[index] = code;
 
-        Logger::getInstance().log(std::string("Character '") + node->character + "' has code: " + code);
+       // Logger::getInstance().log(std::string("Character '") + node->character + "' has code: " + code);
     }
 
     generateCodes(node->left, code + "0");
@@ -318,8 +333,9 @@ std::string HuffmanGenome::getEncodedSequence() const {
 
 // void HuffmanGenome::printCodes() const {
 //     for (char ch : {'A', 'C', 'G', 'T'}) {
-//         if (!huffmanCodes[(unsigned char)ch].empty()) {
-//             std::cout << ch << ": " << huffmanCodes[(unsigned char)ch] << std::endl;
+//         int index = charToIndex(ch);
+//         if (!huffmanCodes[index].empty()) {
+//             std::cout << ch << ": " << huffmanCodes[index] << std::endl;
 //         }
 //     }
 // }
@@ -333,21 +349,27 @@ void HuffmanGenome::saveFrequencyMap(const std::string& filename) const {
     if (!outfile) {
         throw std::runtime_error("Error: Unable to open file '" + filename + "' for writing frequency map.");
     }
-    for (char ch : {'A', 'C', 'G', 'T'}) {
-        outfile << ch << " " << frequencyMap[(unsigned char)ch] << "\n";
+    for (int i = 0; i < BASE_COUNT; ++i) {
+        char ch;
+        switch (i) {
+            case A: ch = 'A'; break;
+            case C: ch = 'C'; break;
+            case G: ch = 'G'; break;
+            case T: ch = 'T'; break;
+            default: ch = '\0'; // Should not occur
+        }
+        outfile << ch << " " << frequencyMap[i] << "\n";
     }
     outfile.close();
 }
 
 void HuffmanGenome::loadFrequencyMap(const std::string& filename) {
     try {
-
         deleteTree(root);
         root = nullptr;
-        memset(frequencyMap, 0, sizeof(frequencyMap));
-        for (int i = 0; i < 256; ++i) huffmanCodes[i].clear();
+        frequencyMap.fill(0);
+        huffmanCodes.fill("");
         encodedSequence.clear();
-      
 
         std::ifstream infile(filename);
         if (!infile) {
@@ -356,10 +378,10 @@ void HuffmanGenome::loadFrequencyMap(const std::string& filename) {
         char ch;
         int freq;
         while (infile >> ch >> freq) {
-            frequencyMap[(unsigned char)ch] = freq;
+            int index = charToIndex(ch);
+            frequencyMap[index] = freq;
         }
         infile.close();
-
 
         buildTree();
     } catch (const std::exception& e) {
@@ -371,7 +393,7 @@ bool HuffmanGenome::validateDecodedFile(const std::string& originalFilename, con
     try {
         Logger::getInstance().log("Validating decoded file...");
 
-        const size_t BUFFER_SIZE = 65536; 
+        const size_t VALIDATION_BUFFER_SIZE = 65536; 
         std::ifstream originalFile(originalFilename, std::ios::binary);
         std::ifstream decodedFile(decodedFilename, std::ios::binary);
 
@@ -381,7 +403,6 @@ bool HuffmanGenome::validateDecodedFile(const std::string& originalFilename, con
         if (!decodedFile.is_open()) {
             throw std::runtime_error("Error: Unable to open decoded file '" + decodedFilename + "'.");
         }
-
 
         originalFile.seekg(0, std::ios::end);
         std::streamsize originalFileSize = originalFile.tellg();
@@ -394,20 +415,23 @@ bool HuffmanGenome::validateDecodedFile(const std::string& originalFilename, con
         Logger::getInstance().log("Original file size: " + std::to_string(originalFileSize));
         Logger::getInstance().log("Decoded file size: " + std::to_string(decodedFileSize));
 
+        if (originalFileSize != decodedFileSize) {
+            Logger::getInstance().log("Error: Files have different sizes.");
+            return false;
+        }
 
-        std::vector<char> originalBuffer(BUFFER_SIZE);
-        std::vector<char> decodedBuffer(BUFFER_SIZE);
+        std::vector<char> originalBuffer(VALIDATION_BUFFER_SIZE);
+        std::vector<char> decodedBuffer(VALIDATION_BUFFER_SIZE);
 
         while (true) {
-
-            originalFile.read(originalBuffer.data(), BUFFER_SIZE);
+            originalFile.read(originalBuffer.data(), VALIDATION_BUFFER_SIZE);
             std::streamsize originalBytesRead = originalFile.gcount();
 
-            decodedFile.read(decodedBuffer.data(), BUFFER_SIZE);
+            decodedFile.read(decodedBuffer.data(), VALIDATION_BUFFER_SIZE);
             std::streamsize decodedBytesRead = decodedFile.gcount();
 
             if (originalBytesRead != decodedBytesRead) {
-                Logger::getInstance().log("Error: Files have different sizes.");
+                Logger::getInstance().log("Error: Files have different read sizes.");
                 return false;
             }
             if (originalBytesRead == 0) {

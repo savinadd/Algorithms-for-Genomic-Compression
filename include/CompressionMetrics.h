@@ -3,13 +3,14 @@
 
 #include <string>
 #include <unordered_map>
+#include <array>
 
 class CompressionMetrics {
 public:
     CompressionMetrics();
 
     void calculateOriginalSize(const std::unordered_map<unsigned char, int>& frequencyMap);
-    void calculateOriginalSize(const int frequencyMap[256]);
+    void calculateOriginalSize(const std::array<unsigned int, 4>& frequencyMap);
     void calculateOriginalSize(long long bits);
 
     void calculateCompressedSize(long long bits);
@@ -24,6 +25,8 @@ public:
 private:
     long long originalSize;    // in bits
     long long compressedSize;  // in bits
+    
+    long getFileSizeInBytes(const std::string& filename) const;
 };
 
 #endif
