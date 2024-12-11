@@ -1,16 +1,55 @@
+// RLECompressionTest.cpp
 #include <gtest/gtest.h>
 #include "../include/RLEGenome.h"
 #include <fstream>
 #include <logger.h>
 
-TEST(RLEGenomeTest, Constructor)
+// Encapsulate the Test Fixture in an Anonymous Namespace
+namespace {
+    class SuppressOutputRLECompressionTest : public ::testing::Test {
+    protected:
+        std::streambuf* original_cout;
+        std::streambuf* original_cerr;
+        std::ofstream null_stream;
+
+        void SetUp() override {
+            // Disable logging before any test code runs
+            Logger::getInstance().enableLogging(false);
+
+            // Open the null device based on the operating system
+        #ifdef _WIN32
+            null_stream.open("nul");
+        #else
+            null_stream.open("/dev/null");
+        #endif
+            if (!null_stream.is_open()) {
+                FAIL() << "Failed to open null device for output suppression.";
+            }
+
+            // Redirect std::cout and std::cerr to the null device
+            original_cout = std::cout.rdbuf(null_stream.rdbuf());
+            original_cerr = std::cerr.rdbuf(null_stream.rdbuf());
+        }
+
+        void TearDown() override {
+            // Restore the original buffers
+            std::cout.rdbuf(original_cout);
+            std::cerr.rdbuf(original_cerr);
+
+            // Close the null device
+            null_stream.close();
+        }
+    };
+}
+
+// Test Cases Modified to Use TEST_F with Unique Fixture
+TEST_F(SuppressOutputRLECompressionTest, Constructor)
 {
     EXPECT_NO_THROW(RLEGenome genome);
 }
 
-TEST(RLEGenomeTest, ValidateInputFile)
+TEST_F(SuppressOutputRLECompressionTest, ValidateInputFile)
 {
-    Logger::getInstance().enableLogging(false);
     RLEGenome genome;
 
     std::string validFile = "valid_test.txt";
@@ -37,9 +76,8 @@ TEST(RLEGenomeTest, ValidateInputFile)
     std::remove(invalidExtFile.c_str());
 }
 
-TEST(RLEGenomeTest, EncodeFromFile)
+TEST_F(SuppressOutputRLECompressionTest, EncodeFromFile)
 {
-    Logger::getInstance().enableLogging(false);
     RLEGenome genome;
 
     std::string inputFile = "test_input.txt";
@@ -59,9 +97,8 @@ TEST(RLEGenomeTest, EncodeFromFile)
     std::remove(outputFile.c_str());
 }
 
-TEST(RLEGenomeTest, DecodeFromFile)
+TEST_F(SuppressOutputRLECompressionTest, DecodeFromFile)
 {
-    Logger::getInstance().enableLogging(false);
     RLEGenome genome;
 
     std::string inputFile = "test_input.txt";
@@ -85,9 +122,8 @@ TEST(RLEGenomeTest, DecodeFromFile)
     std::remove(decompressedFile.c_str());
 }
 
-TEST(RLEGenomeTest, CompressionMetrics)
+TEST_F(SuppressOutputRLECompressionTest, CompressionMetrics)
 {
-    Logger::getInstance().enableLogging(false);
     RLEGenome genome;
 
     std::string inputFile = "test_input.txt";
@@ -108,9 +144,8 @@ TEST(RLEGenomeTest, CompressionMetrics)
     std::remove(outputFile.c_str());
 }
 
-TEST(RLEGenomeTest, ValidateDecodedFile)
+TEST_F(SuppressOutputRLECompressionTest, ValidateDecodedFile)
 {
-    Logger::getInstance().enableLogging(false);
     RLEGenome genome;
 
     std::string inputFile = "test_input.txt";

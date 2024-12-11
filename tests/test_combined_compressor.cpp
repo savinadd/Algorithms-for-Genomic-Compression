@@ -1,9 +1,49 @@
+// CombinedCompressorTest.cpp
 #include <gtest/gtest.h>
 #include "../include/CombinedCompressor.h"
 #include <fstream>
 #include <random>
 #include <logger.h>
 
+// Encapsulate the Test Fixture in an Anonymous Namespace
+namespace {
+    class SuppressOutputCombinedCompressorTest : public ::testing::Test {
+    protected:
+        std::streambuf* original_cout;
+        std::streambuf* original_cerr;
+        std::ofstream null_stream;
+
+        void SetUp() override {
+            // Disable logging before any test code runs
+            Logger::getInstance().enableLogging(false);
+
+            // Open the null device based on the operating system
+        #ifdef _WIN32
+            null_stream.open("nul");
+        #else
+            null_stream.open("/dev/null");
+        #endif
+            if (!null_stream.is_open()) {
+                FAIL() << "Failed to open null device for output suppression.";
+            }
+
+            // Redirect std::cout and std::cerr to the null device
+            original_cout = std::cout.rdbuf(null_stream.rdbuf());
+            original_cerr = std::cerr.rdbuf(null_stream.rdbuf());
+        }
+
+        void TearDown() override {
+            // Restore the original buffers
+            std::cout.rdbuf(original_cout);
+            std::cerr.rdbuf(original_cerr);
+
+            // Close the null device
+            null_stream.close();
+        }
+    };
+}
+
+// Helper Function (No changes needed)
 void generateLargeRedundantFile(const std::string &filename, size_t size)
 {
     std::ofstream file(filename);
@@ -14,14 +54,14 @@ void generateLargeRedundantFile(const std::string &filename, size_t size)
     file.close();
 }
 
-TEST(CombinedCompressorTest, Constructor)
+// Modified Tests Using TEST_F with Unique Fixture
+TEST_F(SuppressOutputCombinedCompressorTest, Constructor)
 {
     EXPECT_NO_THROW(CombinedCompressor compressor);
 }
 
-TEST(CombinedCompressorTest, ValidateInputFile)
+TEST_F(SuppressOutputCombinedCompressorTest, ValidateInputFile)
 {
-    Logger::getInstance().enableLogging(false);
     CombinedCompressor compressor;
 
     std::string validFile = "valid_large_test.txt";
@@ -32,9 +72,8 @@ TEST(CombinedCompressorTest, ValidateInputFile)
     std::remove(validFile.c_str());
 }
 
-TEST(CombinedCompressorTest, EncodeLargeFile)
+TEST_F(SuppressOutputCombinedCompressorTest, EncodeLargeFile)
 {
-    Logger::getInstance().enableLogging(false);
     CombinedCompressor compressor;
     std::string inputFile = "large_test_input.txt";
     generateLargeRedundantFile(inputFile, 50000);
@@ -50,9 +89,8 @@ TEST(CombinedCompressorTest, EncodeLargeFile)
     std::remove(outputFile.c_str());
 }
 
-TEST(CombinedCompressorTest, DecodeLargeFile)
+TEST_F(SuppressOutputCombinedCompressorTest, DecodeLargeFile)
 {
-    Logger::getInstance().enableLogging(false);
     CombinedCompressor compressor;
 
     std::string inputFile = "large_test_input.txt";
@@ -74,16 +112,15 @@ TEST(CombinedCompressorTest, DecodeLargeFile)
     originalContent << original.rdbuf();
     original.close();
 
-    //    EXPECT_EQ(content.str(), originalContent.str());
+    // EXPECT_EQ(content.str(), originalContent.str());
 
     std::remove(inputFile.c_str());
     std::remove(compressedFile.c_str());
     std::remove(decompressedFile.c_str());
 }
 
-TEST(CombinedCompressorTest, CompressionMetricsLargeFile)
+TEST_F(SuppressOutputCombinedCompressorTest, CompressionMetricsLargeFile)
 {
-    Logger::getInstance().enableLogging(false);
     CombinedCompressor compressor;
 
     std::string inputFile = "large_test_input.txt";
@@ -96,13 +133,13 @@ TEST(CombinedCompressorTest, CompressionMetricsLargeFile)
     EXPECT_GT(metrics.getOriginalSize(), 0);
     EXPECT_GT(metrics.getCompressedSize(), 0);
     EXPECT_LE(metrics.getCompressedSize(), metrics.getOriginalSize());
+
     std::remove(inputFile.c_str());
     std::remove(outputFile.c_str());
 }
 
-TEST(CombinedCompressorTest, ValidateDecodedFileLarge)
+TEST_F(SuppressOutputCombinedCompressorTest, ValidateDecodedFileLarge)
 {
-    Logger::getInstance().enableLogging(false);
     CombinedCompressor compressor;
 
     std::string inputFile = "large_test_input.txt";

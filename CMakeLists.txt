@@ -1,9 +1,12 @@
 # Minimum required version of CMake
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.19)
 
 # Project name and C++ standard
 project(GenomeCompressor LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
+
+# Set the CMake policy CMP0135 to NEW
+cmake_policy(SET CMP0135 NEW)
 
 # Include directory for header-only libraries
 include_directories(include)
@@ -25,9 +28,11 @@ enable_testing()
 
 # Add GoogleTest
 include(FetchContent)
+
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/release-1.12.1.zip
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE  # Added to handle timestamps correctly
 )
 
 # Prevent GoogleTest from overriding compiler/linker options

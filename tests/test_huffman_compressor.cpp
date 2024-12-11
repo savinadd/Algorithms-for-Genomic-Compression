@@ -1,20 +1,57 @@
+// HuffmanCompressorTest.cpp
 #include <gtest/gtest.h>
 #include "../include/HuffmanCompressor.h"
 #include <fstream>
 #include <string>
 #include <logger.h>
 
-// Test constructor
-TEST(HuffmanCompressorTest, Constructor)
+// Encapsulate the Test Fixture in an Anonymous Namespace
+namespace {
+    class SuppressOutputHuffmanCompressorTest : public ::testing::Test {
+    protected:
+        std::streambuf* original_cout;
+        std::streambuf* original_cerr;
+        std::ofstream null_stream;
+
+        void SetUp() override {
+            // Disable logging before any test code runs
+            Logger::getInstance().enableLogging(false);
+
+            // Open the null device based on the operating system
+        #ifdef _WIN32
+            null_stream.open("nul");
+        #else
+            null_stream.open("/dev/null");
+        #endif
+            if (!null_stream.is_open()) {
+                FAIL() << "Failed to open null device for output suppression.";
+            }
+
+            // Redirect std::cout and std::cerr to the null device
+            original_cout = std::cout.rdbuf(null_stream.rdbuf());
+            original_cerr = std::cerr.rdbuf(null_stream.rdbuf());
+        }
+
+        void TearDown() override {
+            // Restore the original buffers
+            std::cout.rdbuf(original_cout);
+            std::cerr.rdbuf(original_cerr);
+
+            // Close the null device
+            null_stream.close();
+        }
+    };
+}
+
+// Test Cases Modified to Use TEST_F with Unique Fixture
+TEST_F(SuppressOutputHuffmanCompressorTest, Constructor)
 {
-    HuffmanCompressor compressor;
+    EXPECT_NO_THROW(HuffmanCompressor compressor);
     EXPECT_NO_THROW(HuffmanCompressor());
 }
 
-// Test frequency map saving and loading
-TEST(HuffmanCompressorTest, SaveAndLoadFrequencyMap)
+TEST_F(SuppressOutputHuffmanCompressorTest, SaveAndLoadFrequencyMap)
 {
-    Logger::getInstance().enableLogging(false);
     HuffmanCompressor compressor;
 
     // Set up a fake frequency map
@@ -39,10 +76,8 @@ TEST(HuffmanCompressorTest, SaveAndLoadFrequencyMap)
     std::remove(freqFile.c_str());
 }
 
-// Test encoding from file
-TEST(HuffmanCompressorTest, EncodeFromFile)
+TEST_F(SuppressOutputHuffmanCompressorTest, EncodeFromFile)
 {
-    Logger::getInstance().enableLogging(false);
     HuffmanCompressor compressor;
 
     // Create a temporary input file
@@ -68,10 +103,8 @@ TEST(HuffmanCompressorTest, EncodeFromFile)
     std::remove((outputFile + ".freq").c_str()); // Frequency map file
 }
 
-// Test decoding from file
-TEST(HuffmanCompressorTest, DecodeFromFile)
+TEST_F(SuppressOutputHuffmanCompressorTest, DecodeFromFile)
 {
-    Logger::getInstance().enableLogging(false);
     HuffmanCompressor compressor;
 
     // Create a temporary input file
@@ -90,9 +123,9 @@ TEST(HuffmanCompressorTest, DecodeFromFile)
 
     // Check that the decompressed file matches the original
     std::ifstream decompressed(decompressedFile);
-    std::ostringstream decompressedContent;
-    decompressedContent << decompressed.rdbuf();
-    EXPECT_EQ(decompressedContent.str(), "AAAABBBCCD");
+    std::ostringstream content;
+    content << decompressed.rdbuf();
+    EXPECT_EQ(content.str(), "AAAABBBCCD");
 
     // Clean up test files
     std::remove(inputFile.c_str());
@@ -101,10 +134,8 @@ TEST(HuffmanCompressorTest, DecodeFromFile)
     std::remove(decompressedFile.c_str());
 }
 
-// Test validation of decoded file
-TEST(HuffmanCompressorTest, ValidateDecodedFile)
+TEST_F(SuppressOutputHuffmanCompressorTest, ValidateDecodedFile)
 {
-    Logger::getInstance().enableLogging(false);
     HuffmanCompressor compressor;
 
     // Create a temporary input file

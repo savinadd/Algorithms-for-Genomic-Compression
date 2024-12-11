@@ -1,16 +1,55 @@
+// HuffmanGenomeTest.cpp
 #include <gtest/gtest.h>
 #include "../include/HuffmanGenome.h"
 #include <fstream>
 #include <logger.h>
 
-TEST(HuffmanGenomeTest, ConstructorDestructor)
+// Encapsulate the Test Fixture in an Anonymous Namespace
+namespace {
+    class SuppressOutputHuffmanGenomeTest : public ::testing::Test {
+    protected:
+        std::streambuf* original_cout;
+        std::streambuf* original_cerr;
+        std::ofstream null_stream;
+
+        void SetUp() override {
+            // Disable logging before any test code runs
+            Logger::getInstance().enableLogging(false);
+
+            // Open the null device based on the operating system
+        #ifdef _WIN32
+            null_stream.open("nul");
+        #else
+            null_stream.open("/dev/null");
+        #endif
+            if (!null_stream.is_open()) {
+                FAIL() << "Failed to open null device for output suppression.";
+            }
+
+            // Redirect std::cout and std::cerr to the null device
+            original_cout = std::cout.rdbuf(null_stream.rdbuf());
+            original_cerr = std::cerr.rdbuf(null_stream.rdbuf());
+        }
+
+        void TearDown() override {
+            // Restore the original buffers
+            std::cout.rdbuf(original_cout);
+            std::cerr.rdbuf(original_cerr);
+
+            // Close the null device
+            null_stream.close();
+        }
+    };
+}
+
+// Test Cases Modified to Use TEST_F with Unique Fixture
+TEST_F(SuppressOutputHuffmanGenomeTest, ConstructorDestructor)
 {
     EXPECT_NO_THROW(HuffmanGenome genome);
 }
 
-TEST(HuffmanGenomeTest, SaveAndLoadFrequencyMap)
+TEST_F(SuppressOutputHuffmanGenomeTest, SaveAndLoadFrequencyMap)
 {
-    Logger::getInstance().enableLogging(false);
     HuffmanGenome genome;
 
     genome.frequencyMap[HuffmanGenome::A] = 5;
@@ -32,9 +71,8 @@ TEST(HuffmanGenomeTest, SaveAndLoadFrequencyMap)
     std::remove(freqFile.c_str());
 }
 
-TEST(HuffmanGenomeTest, EncodeFromFile)
+TEST_F(SuppressOutputHuffmanGenomeTest, EncodeFromFile)
 {
-    Logger::getInstance().enableLogging(false);
     HuffmanGenome genome;
 
     std::string inputFile = "test_input.txt";
@@ -55,9 +93,8 @@ TEST(HuffmanGenomeTest, EncodeFromFile)
     std::remove((outputFile + ".freq").c_str());
 }
 
-TEST(HuffmanGenomeTest, DecodeFromFile)
+TEST_F(SuppressOutputHuffmanGenomeTest, DecodeFromFile)
 {
-    Logger::getInstance().enableLogging(false);
     HuffmanGenome genome;
 
     std::string inputFile = "test_input.txt";
@@ -82,9 +119,8 @@ TEST(HuffmanGenomeTest, DecodeFromFile)
     std::remove(decompressedFile.c_str());
 }
 
-TEST(HuffmanGenomeTest, ValidateInputFile)
+TEST_F(SuppressOutputHuffmanGenomeTest, ValidateInputFile)
 {
-    Logger::getInstance().enableLogging(false);
     HuffmanGenome genome;
 
     std::string validFile = "valid_test.txt";
