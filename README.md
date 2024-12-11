@@ -44,9 +44,10 @@ This project focuses on developing and comparing optimized compression algorithm
 
 
 # Setup
-1. **Clone this repository** in and open in **Visual Studio Code**:
+1. **Clone this repository** in and open in **Visual Studio Code**, navigating to the correct directory:
    ```bash
    git clone https://github.com/savinadd/Algorithms-for-Genomic-Compression
+   cd Optimized-Algorithms-for-Genomic-Compression
 2. **Run the installation script** in a terminal within Visual Studio Code
     ```bash
     ./install.sh
