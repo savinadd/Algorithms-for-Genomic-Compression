@@ -78,7 +78,7 @@ void Application::handleCompress()
 
     if (validateMode_)
     {
-        Logger::getInstance().log("Starting Huffman decoding...");
+       // Logger::getInstance().log("Starting Huffman decoding...");
 
         // Define a temporary decoded file path
         fs::path outputPath(outputFile_);

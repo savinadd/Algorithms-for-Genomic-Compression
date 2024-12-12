@@ -236,7 +236,7 @@ void HuffmanCompressor::decodeFromFile(const std::string &inputFilename, const s
         // Load frequency map
         loadFrequencyMap(freqFilename);
 
-        std::cout << "Frequency map loaded from '" << freqFilename << "'.\n";
+       // std::cout << "Frequency map loaded from '" << freqFilename << "'.\n";
 
         // Rebuild Huffman tree using the frequency map
         deleteTree(root);
@@ -469,7 +469,7 @@ bool HuffmanCompressor::validateDecodedFile(const std::string &originalFilename,
             }
         }
 
-        Logger::getInstance().log("Validation successful. Decoded file matches the original.");
+     //   Logger::getInstance().log("Validation successful. Decoded file matches the original.");
         return true;
         exit;
     }

@@ -564,7 +564,7 @@ bool HuffmanGenome::validateDecodedFile(const std::string &originalFilename, con
             }
         }
 
-        Logger::getInstance().log("Validation successful. Decoded file matches the original.");
+      //  Logger::getInstance().log("Validation successful. Decoded file matches the original.");
         return true;
     }
     catch (const std::exception &e)

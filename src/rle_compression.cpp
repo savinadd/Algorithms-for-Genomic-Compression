@@ -296,7 +296,7 @@ bool RLEGenome::validateDecodedFile(const std::string &originalFilename, const s
             }
         }
 
-        std::cout << "Validation successful. Decoded file matches the original." << std::endl;
+     //   std::cout << "Validation successful. Decoded file matches the original." << std::endl;
         return true;
     }
     catch (const std::exception &e)
